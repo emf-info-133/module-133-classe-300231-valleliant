@@ -19,6 +19,10 @@ services:
       - "8081:8080"
     networks:
       - microservices-network
+    depends_on:
+      - mysql-db
+    environment:
+      - DATABASE_URL=jdbc:mysql://mysql-db:3306/bd_monprojet
 
   # Service REST 2
   service-rest2:
@@ -47,7 +51,23 @@ services:
       - microservices-network
     depends_on:
       - api-gateway
+      
+  # MySQL Database
+  mysql-db:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: emf123
+      MYSQL_DATABASE: bd_monprojet
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - microservices-network
 
 networks:
   microservices-network:
-    driver: bridge 
+    driver: bridge
+    
+volumes:
+  mysql-data: 
