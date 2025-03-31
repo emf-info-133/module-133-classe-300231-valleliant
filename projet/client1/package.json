@@ -18,6 +18,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "dev": "BROWSER=none WDS_SOCKET_HOST=0.0.0.0 react-scripts start",
+    "dev:wsl": "./dev.sh",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

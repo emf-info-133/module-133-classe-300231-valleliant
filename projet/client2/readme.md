@@ -11,6 +11,12 @@ npm install
 ## Développement
 
 ```bash
+npm run dev
+```
+
+Ou alternativement:
+
+```bash
 npm start
 ```
 
