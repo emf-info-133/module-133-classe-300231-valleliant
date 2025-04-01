@@ -13,7 +13,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "t_teams_has_t_ranking")
+@Table(name = "tr_teams_rankings")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,10 +25,10 @@ public class TeamRanking {
     private Integer id;
     
     @ManyToOne
-    @JoinColumn(name = "t_teams_pk_teams", nullable = false)
+    @JoinColumn(name = "fk_teams", nullable = false)
     private Team team;
     
     @ManyToOne
-    @JoinColumn(name = "t_ranking_pk_ranking", nullable = false)
+    @JoinColumn(name = "fk_ranking", nullable = false)
     private Ranking ranking;
 } 

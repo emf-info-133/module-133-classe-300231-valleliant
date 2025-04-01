@@ -22,7 +22,7 @@ services:
     depends_on:
       - mysql-db
     environment:
-      - DATABASE_URL=jdbc:mysql://mysql-db:3306/bd_monprojet
+      - DATABASE_URL=jdbc:mysql://mysql-db:3306/133-db-alparslanc
 
   # Service REST 2
   service-rest2:
@@ -59,7 +59,7 @@ services:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: emf123
-      MYSQL_DATABASE: bd_monprojet
+      MYSQL_DATABASE: 133-db-alparslanc
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
