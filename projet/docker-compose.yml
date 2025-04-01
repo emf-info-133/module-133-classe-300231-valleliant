@@ -11,6 +11,8 @@ services:
     depends_on:
       - service-rest1
       - service-rest2
+    environment:
+      - JAVA_OPTS=-Xmx512m -Xms256m
 
   # Service REST 1
   service-rest1:
@@ -22,7 +24,10 @@ services:
     depends_on:
       - mysql-db
     environment:
-      - DATABASE_URL=jdbc:mysql://mysql-db:3306/133-db-alparslanc
+      - JAVA_OPTS=-Xmx512m -Xms256m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/133-db-alparslanc
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=emf123
 
   # Service REST 2
   service-rest2:
@@ -31,6 +36,13 @@ services:
       - "8082:8080"
     networks:
       - microservices-network
+    depends_on:
+      - mysql-db
+    environment:
+      - JAVA_OPTS=-Xmx512m -Xms256m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/133-db-alparslanc
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=emf123
 
   # Client 1
   client1:
@@ -64,10 +76,11 @@ services:
       - mysql-data:/var/lib/mysql
     networks:
       - microservices-network
+    command: --default-authentication-plugin=mysql_native_password
 
 networks:
   microservices-network:
     driver: bridge
     
 volumes:
-  mysql-data: 
+  mysql-data:
