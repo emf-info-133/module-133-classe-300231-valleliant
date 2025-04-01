@@ -1,5 +1,5 @@
-com/monprojet/service2/controller/GameController.class
 com/monprojet/service2/model/Tournament.class
+com/monprojet/service2/controller/GameController.class
 com/monprojet/service2/controller/TournamentController.class
 com/monprojet/service2/service/AdminService.class
 com/monprojet/service2/dto/TeamDTO.class
@@ -15,8 +15,8 @@ com/monprojet/service2/repository/AdminRepository.class
 com/monprojet/service2/model/Ranking.class
 com/monprojet/service2/dto/MatchDTO.class
 com/monprojet/service2/repository/RankingRepository.class
-com/monprojet/service2/repository/TeamRepository.class
 com/monprojet/service2/model/Team.class
+com/monprojet/service2/repository/TeamRepository.class
 com/monprojet/service2/model/Game.class
 com/monprojet/service2/ServiceRest2Application.class
 com/monprojet/service2/repository/MatchRepository.class
