@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Service1Application",
+            "request": "launch",
+            "mainClass": "com.monprojet.service1.Service1Application",
+            "projectName": "module133classe300231valleliant1"
+        },
+        {
+            "type": "java",
             "name": "Spring Boot-Service1Application<service1>",
             "request": "launch",
             "cwd": "${workspaceFolder}",
