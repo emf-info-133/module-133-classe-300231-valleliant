@@ -10,7 +10,7 @@ services:
       - mysql
     environment:
       - SPRING_APPLICATION_NAME=service1
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3308/133-db-alparslanc
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/133-db-alparslanc
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=emf123
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
