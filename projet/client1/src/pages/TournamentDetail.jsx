@@ -67,12 +67,20 @@ const TournamentDetail = () => {
       <header className="bg-white shadow-md p-4">
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold">{tournament?.name || 'Détails du tournoi'}</h1>
-          <Link 
-            to="/tournaments"
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-          >
-            Retour aux tournois
-          </Link>
+          <div className="flex space-x-4">
+            <Link 
+              to={`/tournaments/${tournamentId}/ranking`}
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+            >
+              Classement
+            </Link>
+            <Link 
+              to="/tournaments"
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+            >
+              Retour aux tournois
+            </Link>
+          </div>
         </div>
       </header>
 

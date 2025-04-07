@@ -1,0 +1,244 @@
+.tournament-list-container {
+  padding: 20px;
+}
+
+.tournament-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.tournament-list-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 24px;
+}
+
+.btn-add {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background-color: #3490dc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-add:hover {
+  background-color: #2779bd;
+}
+
+.btn-add::before {
+  content: '+';
+  margin-right: 8px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.table-container {
+  overflow-x: auto;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tournament-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tournament-table th,
+.tournament-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tournament-table th {
+  background-color: #f8fafc;
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 14px;
+}
+
+.tournament-table tr:hover {
+  background-color: #f8fafc;
+}
+
+.tournament-table tr:last-child td {
+  border-bottom: none;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-upcoming {
+  background-color: #ebf8ff;
+  color: #2b6cb0;
+}
+
+.status-active {
+  background-color: #c6f6d5;
+  color: #276749;
+}
+
+.status-completed {
+  background-color: #e9e9e9;
+  color: #4a5568;
+}
+
+.status-cancelled {
+  background-color: #fed7d7;
+  color: #c53030;
+}
+
+.actions-cell {
+  white-space: nowrap;
+  display: flex;
+  gap: 8px;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background-color: #edf2f7;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4a5568;
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background-color: #e2e8f0;
+}
+
+.btn-icon.btn-danger {
+  color: #e53e3e;
+}
+
+.btn-icon.btn-danger:hover {
+  background-color: #fed7d7;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.empty-state p {
+  margin-bottom: 20px;
+  color: #718096;
+}
+
+.btn-primary {
+  padding: 10px 16px;
+  background-color: #3490dc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #2779bd;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirm-modal {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  padding: 24px;
+  width: 400px;
+  max-width: 90%;
+}
+
+.confirm-modal h3 {
+  margin-top: 0;
+  color: #2d3748;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn-secondary {
+  padding: 10px 16px;
+  background-color: #edf2f7;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #e2e8f0;
+}
+
+.btn-danger {
+  padding: 10px 16px;
+  background-color: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-danger:hover {
+  background-color: #c53030;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tournament-list-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .tournament-table th,
+  .tournament-table td {
+    padding: 10px 12px;
+  }
+} 
