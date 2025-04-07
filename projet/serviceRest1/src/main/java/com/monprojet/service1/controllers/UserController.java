@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.monprojet.service1.dto.UserDTO;
@@ -52,12 +52,9 @@ public class UserController {
     
     @PostMapping
     @Operation(summary = "Créer un nouvel utilisateur", description = "Crée un nouvel utilisateur et renvoie les détails")
-    public ResponseEntity<UserDTO> createUser(
-            @RequestParam String name,
-            @RequestParam String email,
-            @RequestParam String password) {
-        UserDTO userDTO = new UserDTO(null, name, email);
-        UserDTO createdUser = userService.createUser(userDTO, password);
+    public ResponseEntity<UserDTO> createUser(@RequestBody CreateUserRequest createUserRequest) {
+        UserDTO userDTO = new UserDTO(null, createUserRequest.getName(), createUserRequest.getEmail());
+        UserDTO createdUser = userService.createUser(userDTO, createUserRequest.getPassword());
         return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
     
@@ -65,9 +62,7 @@ public class UserController {
     @Operation(summary = "Mettre à jour un utilisateur", description = "Met à jour un utilisateur existant par son ID")
     public ResponseEntity<UserDTO> updateUser(
             @PathVariable Integer id,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String email) {
-        UserDTO userDTO = new UserDTO(null, name, email);
+            @RequestBody UserDTO userDTO) {
         UserDTO updatedUser = userService.updateUser(id, userDTO);
         if (updatedUser != null) {
             return new ResponseEntity<>(updatedUser, HttpStatus.OK);
@@ -84,6 +79,38 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+    
+    // Classe statique pour la requête de création d'utilisateur
+    public static class CreateUserRequest {
+        private String name;
+        private String email;
+        private String password;
+        
+        // Getters et Setters
+        public String getName() {
+            return name;
+        }
+        
+        public void setName(String name) {
+            this.name = name;
+        }
+        
+        public String getEmail() {
+            return email;
+        }
+        
+        public void setEmail(String email) {
+            this.email = email;
+        }
+        
+        public String getPassword() {
+            return password;
+        }
+        
+        public void setPassword(String password) {
+            this.password = password;
         }
     }
 } 

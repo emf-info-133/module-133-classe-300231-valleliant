@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.monprojet.service1.dto.TeamDTO;
@@ -66,11 +66,12 @@ public class TeamController {
     
     @PostMapping
     @Operation(summary = "Créer une nouvelle équipe", description = "Crée une nouvelle équipe et renvoie les détails")
-    public ResponseEntity<TeamDTO> createTeam(
-            @RequestParam String name,
-            @RequestParam Integer captainId,
-            @RequestParam Integer tournamentId) {
-        TeamDTO team = teamService.createTeam(name, captainId, tournamentId);
+    public ResponseEntity<TeamDTO> createTeam(@RequestBody TeamRequest teamRequest) {
+        TeamDTO team = teamService.createTeam(
+            teamRequest.getName(),
+            teamRequest.getCaptainId(),
+            teamRequest.getTournamentId()
+        );
         if (team != null) {
             return new ResponseEntity<>(team, HttpStatus.CREATED);
         } else {
@@ -82,10 +83,13 @@ public class TeamController {
     @Operation(summary = "Mettre à jour une équipe", description = "Met à jour une équipe existante par son ID")
     public ResponseEntity<TeamDTO> updateTeam(
             @PathVariable Integer id,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) Integer captainId,
-            @RequestParam(required = false) Integer tournamentId) {
-        TeamDTO team = teamService.updateTeam(id, name, captainId, tournamentId);
+            @RequestBody TeamRequest teamRequest) {
+        TeamDTO team = teamService.updateTeam(
+            id,
+            teamRequest.getName(),
+            teamRequest.getCaptainId(),
+            teamRequest.getTournamentId()
+        );
         if (team != null) {
             return new ResponseEntity<>(team, HttpStatus.OK);
         } else {
@@ -101,6 +105,38 @@ public class TeamController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+    
+    // Classe de requête pour les équipes
+    public static class TeamRequest {
+        private String name;
+        private Integer captainId;
+        private Integer tournamentId;
+        
+        // Getters et Setters
+        public String getName() {
+            return name;
+        }
+        
+        public void setName(String name) {
+            this.name = name;
+        }
+        
+        public Integer getCaptainId() {
+            return captainId;
+        }
+        
+        public void setCaptainId(Integer captainId) {
+            this.captainId = captainId;
+        }
+        
+        public Integer getTournamentId() {
+            return tournamentId;
+        }
+        
+        public void setTournamentId(Integer tournamentId) {
+            this.tournamentId = tournamentId;
         }
     }
 } 

@@ -38,19 +38,25 @@ public class AdminController {
     }
 
     @PostMapping
-    public ResponseEntity<AdminDTO> addAdmin(@RequestParam String name, 
-                                           @RequestParam String email, 
-                                           @RequestParam String password) {
-        AdminDTO admin = adminService.addAdmin(name, email, password);
+    public ResponseEntity<AdminDTO> addAdmin(@RequestBody CreateAdminRequest createAdminRequest) {
+        AdminDTO admin = adminService.addAdmin(
+            createAdminRequest.getName(),
+            createAdminRequest.getEmail(),
+            createAdminRequest.getPassword()
+        );
         return new ResponseEntity<>(admin, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AdminDTO> updateAdmin(@PathVariable Integer id,
-                                              @RequestParam(required = false) String name, 
-                                              @RequestParam(required = false) String email, 
-                                              @RequestParam(required = false) String password) {
-        AdminDTO admin = adminService.updateAdmin(id, name, email, password);
+    public ResponseEntity<AdminDTO> updateAdmin(
+            @PathVariable Integer id,
+            @RequestBody UpdateAdminRequest updateAdminRequest) {
+        AdminDTO admin = adminService.updateAdmin(
+            id,
+            updateAdminRequest.getName(),
+            updateAdminRequest.getEmail(),
+            updateAdminRequest.getPassword()
+        );
         if (admin != null) {
             return new ResponseEntity<>(admin, HttpStatus.OK);
         } else {
@@ -65,6 +71,70 @@ public class AdminController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+    
+    // Classe de requête pour créer un admin
+    public static class CreateAdminRequest {
+        private String name;
+        private String email;
+        private String password;
+        
+        // Getters et Setters
+        public String getName() {
+            return name;
+        }
+        
+        public void setName(String name) {
+            this.name = name;
+        }
+        
+        public String getEmail() {
+            return email;
+        }
+        
+        public void setEmail(String email) {
+            this.email = email;
+        }
+        
+        public String getPassword() {
+            return password;
+        }
+        
+        public void setPassword(String password) {
+            this.password = password;
+        }
+    }
+    
+    // Classe de requête pour mettre à jour un admin
+    public static class UpdateAdminRequest {
+        private String name;
+        private String email;
+        private String password;
+        
+        // Getters et Setters
+        public String getName() {
+            return name;
+        }
+        
+        public void setName(String name) {
+            this.name = name;
+        }
+        
+        public String getEmail() {
+            return email;
+        }
+        
+        public void setEmail(String email) {
+            this.email = email;
+        }
+        
+        public String getPassword() {
+            return password;
+        }
+        
+        public void setPassword(String password) {
+            this.password = password;
         }
     }
 } 

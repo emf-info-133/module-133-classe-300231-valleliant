@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.monprojet.service1.dto.MatchDTO;
@@ -65,11 +65,12 @@ public class MatchController {
     
     @PostMapping
     @Operation(summary = "Créer un nouveau match", description = "Crée un nouveau match et renvoie les détails")
-    public ResponseEntity<MatchDTO> createMatch(
-            @RequestParam Integer tournamentId,
-            @RequestParam Integer team1Id,
-            @RequestParam Integer team2Id) {
-        MatchDTO match = matchService.createMatch(tournamentId, team1Id, team2Id);
+    public ResponseEntity<MatchDTO> createMatch(@RequestBody MatchRequest matchRequest) {
+        MatchDTO match = matchService.createMatch(
+            matchRequest.getTournamentId(),
+            matchRequest.getTeam1Id(),
+            matchRequest.getTeam2Id()
+        );
         if (match != null) {
             return new ResponseEntity<>(match, HttpStatus.CREATED);
         } else {
@@ -85,6 +86,38 @@ public class MatchController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+    
+    // Classe de requête pour les matches
+    public static class MatchRequest {
+        private Integer tournamentId;
+        private Integer team1Id;
+        private Integer team2Id;
+        
+        // Getters et Setters
+        public Integer getTournamentId() {
+            return tournamentId;
+        }
+        
+        public void setTournamentId(Integer tournamentId) {
+            this.tournamentId = tournamentId;
+        }
+        
+        public Integer getTeam1Id() {
+            return team1Id;
+        }
+        
+        public void setTeam1Id(Integer team1Id) {
+            this.team1Id = team1Id;
+        }
+        
+        public Integer getTeam2Id() {
+            return team2Id;
+        }
+        
+        public void setTeam2Id(Integer team2Id) {
+            this.team2Id = team2Id;
         }
     }
 } 

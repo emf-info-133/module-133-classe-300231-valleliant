@@ -38,17 +38,16 @@ public class GameController {
     }
 
     @PostMapping
-    public ResponseEntity<GameDTO> addGame(@RequestParam String name, 
-                                          @RequestParam String type) {
-        GameDTO game = gameService.addGame(name, type);
+    public ResponseEntity<GameDTO> addGame(@RequestBody GameRequest gameRequest) {
+        GameDTO game = gameService.addGame(gameRequest.getName(), gameRequest.getType());
         return new ResponseEntity<>(game, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GameDTO> updateGame(@PathVariable Integer id,
-                                             @RequestParam(required = false) String name, 
-                                             @RequestParam(required = false) String type) {
-        GameDTO game = gameService.updateGame(id, name, type);
+    public ResponseEntity<GameDTO> updateGame(
+            @PathVariable Integer id,
+            @RequestBody GameRequest gameRequest) {
+        GameDTO game = gameService.updateGame(id, gameRequest.getName(), gameRequest.getType());
         if (game != null) {
             return new ResponseEntity<>(game, HttpStatus.OK);
         } else {
@@ -63,6 +62,29 @@ public class GameController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+    
+    // Classe pour les requêtes de jeu
+    public static class GameRequest {
+        private String name;
+        private String type;
+        
+        // Getters et Setters
+        public String getName() {
+            return name;
+        }
+        
+        public void setName(String name) {
+            this.name = name;
+        }
+        
+        public String getType() {
+            return type;
+        }
+        
+        public void setType(String type) {
+            this.type = type;
         }
     }
 } 

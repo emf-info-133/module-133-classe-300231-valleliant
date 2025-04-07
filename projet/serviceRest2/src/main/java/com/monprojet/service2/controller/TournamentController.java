@@ -38,13 +38,14 @@ public class TournamentController {
     }
 
     @PostMapping
-    public ResponseEntity<TournamentDTO> addTournament(
-            @RequestParam String name,
-            @RequestParam String date,
-            @RequestParam Integer gameId,
-            @RequestParam Integer adminId,
-            @RequestParam Boolean status) {
-        TournamentDTO tournament = tournamentService.addTournament(name, date, gameId, adminId, status);
+    public ResponseEntity<TournamentDTO> addTournament(@RequestBody TournamentRequest tournamentRequest) {
+        TournamentDTO tournament = tournamentService.addTournament(
+            tournamentRequest.getName(),
+            tournamentRequest.getDate(),
+            tournamentRequest.getGameId(),
+            tournamentRequest.getAdminId(),
+            tournamentRequest.getStatus()
+        );
         if (tournament != null) {
             return new ResponseEntity<>(tournament, HttpStatus.CREATED);
         } else {
@@ -55,12 +56,15 @@ public class TournamentController {
     @PutMapping("/{id}")
     public ResponseEntity<TournamentDTO> updateTournament(
             @PathVariable Integer id,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String date,
-            @RequestParam(required = false) Integer gameId,
-            @RequestParam(required = false) Integer adminId,
-            @RequestParam(required = false) Boolean status) {
-        TournamentDTO tournament = tournamentService.updateTournament(id, name, date, gameId, adminId, status);
+            @RequestBody TournamentRequest tournamentRequest) {
+        TournamentDTO tournament = tournamentService.updateTournament(
+            id,
+            tournamentRequest.getName(),
+            tournamentRequest.getDate(),
+            tournamentRequest.getGameId(),
+            tournamentRequest.getAdminId(),
+            tournamentRequest.getStatus()
+        );
         if (tournament != null) {
             return new ResponseEntity<>(tournament, HttpStatus.OK);
         } else {
@@ -75,6 +79,56 @@ public class TournamentController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+    
+    // Classe pour les requêtes de tournoi
+    public static class TournamentRequest {
+        private String name;
+        private String date;
+        private Integer gameId;
+        private Integer adminId;
+        private Boolean status;
+        
+        // Getters et Setters
+        public String getName() {
+            return name;
+        }
+        
+        public void setName(String name) {
+            this.name = name;
+        }
+        
+        public String getDate() {
+            return date;
+        }
+        
+        public void setDate(String date) {
+            this.date = date;
+        }
+        
+        public Integer getGameId() {
+            return gameId;
+        }
+        
+        public void setGameId(Integer gameId) {
+            this.gameId = gameId;
+        }
+        
+        public Integer getAdminId() {
+            return adminId;
+        }
+        
+        public void setAdminId(Integer adminId) {
+            this.adminId = adminId;
+        }
+        
+        public Boolean getStatus() {
+            return status;
+        }
+        
+        public void setStatus(Boolean status) {
+            this.status = status;
         }
     }
 } 
