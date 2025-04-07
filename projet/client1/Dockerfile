@@ -1,18 +1,13 @@
-FROM node:18-alpine
+FROM nginx:alpine
 
-WORKDIR /app
+COPY ./build /usr/share/nginx/html
 
-COPY package*.json ./
+# Copier la configuration nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-RUN npm install
+# Créer un fichier de vérification de l'état de santé
+RUN echo "<!DOCTYPE html><html><body><h1>Le serveur fonctionne correctement!</h1></body></html>" > /usr/share/nginx/html/health.html
 
-COPY . .
+EXPOSE 80
 
-RUN npm run build
-
-# Installer un serveur léger pour servir l'application
-RUN npm install -g serve
-
-EXPOSE 3000
-
-CMD ["serve", "-s", "build", "-l", "3000"] 
+CMD ["nginx", "-g", "daemon off;"] 

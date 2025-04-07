@@ -1,0 +1,128 @@
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+
+// Données fictives pour les tournois
+const mockTournaments = [
+  {
+    id: 1,
+    name: 'Tournoi de Printemps 2023',
+    description: 'Compétition annuelle ouverte à tous les joueurs',
+    startDate: '2023-04-15',
+    endDate: '2023-04-30',
+    teams: []
+  },
+  {
+    id: 2,
+    name: 'Championnat régional',
+    description: 'Championnat officiel de la région',
+    startDate: '2023-05-10',
+    endDate: '2023-05-25',
+    teams: []
+  },
+  {
+    id: 3,
+    name: 'Coupe des Champions',
+    description: 'Tournoi réservé aux équipes d\'élite',
+    startDate: '2023-06-05',
+    endDate: '2023-06-20',
+    teams: []
+  }
+];
+
+// Données fictives pour les équipes
+export const mockTeams = [
+  {
+    id: 1,
+    name: 'Les Aigles',
+    tournamentId: 1,
+    captain: { id: 1, name: 'Utilisateur Test', email: 'test@example.com' },
+    members: [
+      { id: 1, name: 'Utilisateur Test', email: 'test@example.com' }
+    ],
+    maxMembers: 5
+  },
+  {
+    id: 2,
+    name: 'Les Loups',
+    tournamentId: 1,
+    captain: { id: 2, name: 'Admin', email: 'admin@example.com' },
+    members: [
+      { id: 2, name: 'Admin', email: 'admin@example.com' }
+    ],
+    maxMembers: 5
+  }
+];
+
+// Lier les équipes aux tournois
+mockTeams.forEach(team => {
+  const tournament = mockTournaments.find(t => t.id === team.tournamentId);
+  if (tournament) {
+    tournament.teams.push(team);
+  }
+});
+
+export const getAllTournaments = async () => {
+  // Simuler une latence réseau
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  return [...mockTournaments];
+};
+
+export const getTournamentById = async (tournamentId) => {
+  // Simuler une latence réseau
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  const id = parseInt(tournamentId, 10);
+  const tournament = mockTournaments.find(t => t.id === id);
+  
+  if (!tournament) {
+    throw new Error('Tournoi non trouvé');
+  }
+  
+  return { ...tournament };
+};
+
+export const createTeam = async (tournamentId, teamName) => {
+  // Simuler une latence réseau
+  await new Promise(resolve => setTimeout(resolve, 700));
+  
+  // Récupérer l'utilisateur depuis le localStorage (simulation d'un utilisateur connecté)
+  const userStr = localStorage.getItem('user');
+  if (!userStr) {
+    throw new Error('Vous devez être connecté pour créer une équipe');
+  }
+  
+  const user = JSON.parse(userStr);
+  const tid = parseInt(tournamentId, 10);
+  
+  // Vérifier si le tournoi existe
+  const tournament = mockTournaments.find(t => t.id === tid);
+  if (!tournament) {
+    throw new Error('Tournoi non trouvé');
+  }
+  
+  // Créer une nouvelle équipe
+  const newTeam = {
+    id: mockTeams.length + 1,
+    name: teamName,
+    tournamentId: tid,
+    captain: {
+      id: user.id,
+      name: user.name,
+      email: user.email
+    },
+    members: [
+      {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      }
+    ],
+    maxMembers: 5
+  };
+  
+  // Ajouter l'équipe à la liste et au tournoi
+  mockTeams.push(newTeam);
+  tournament.teams.push(newTeam);
+  
+  return { ...newTeam };
+}; 
