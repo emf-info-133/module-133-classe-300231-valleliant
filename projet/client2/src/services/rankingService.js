@@ -1,94 +1,69 @@
-import { mockTeams } from './teamService';
+import axios from 'axios';
+import { API_URL } from '../config';
 
-// Données fictives pour les classements
-let mockRankings = [
-  {
-    id: 1,
-    tournamentId: 1,
-    teams: [
-      {
-        teamId: 1,
-        position: 1,
-        points: 10,
-        matchesPlayed: 4,
-        wins: 3,
-        draws: 1,
-        losses: 0
-      },
-      {
-        teamId: 2,
-        position: 2,
-        points: 7,
-        matchesPlayed: 4,
-        wins: 2,
-        draws: 1,
-        losses: 1
-      }
-    ]
-  },
-  {
-    id: 2,
-    tournamentId: 2,
-    teams: [
-      {
-        teamId: 3,
-        position: 1,
-        points: 3,
-        matchesPlayed: 1,
-        wins: 1,
-        draws: 0,
-        losses: 0
-      }
-    ]
-  },
-  {
-    id: 3,
-    tournamentId: 3,
-    teams: []
-  }
-];
+// URL de base pour les classements
+const RANKING_API = `${API_URL}/service1/rankings`;
 
 // Récupérer tous les classements
 export const getAllRankings = async () => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return [...mockRankings];
+  try {
+    const response = await axios.get(RANKING_API, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la récupération des classements:', error);
+    throw error;
+  }
 };
 
-// Récupérer le classement d'un tournoi spécifique
+// Récupérer le classement d'un tournoi
 export const getRankingByTournament = async (tournamentId) => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 400));
-  
-  const tid = parseInt(tournamentId, 10);
-  const ranking = mockRankings.find(r => r.tournamentId === tid);
-  
-  if (!ranking) {
-    throw new Error('Classement non trouvé');
-  }
-  
-  // Récupérer les détails complets des équipes
-  const teamsWithDetails = await Promise.all(
-    ranking.teams.map(async (teamRanking) => {
-      try {
-        const teamDetails = mockTeams.find(t => t.id === teamRanking.teamId);
-        return {
-          ...teamRanking,
-          team: teamDetails || null
-        };
-      } catch (error) {
-        return {
-          ...teamRanking,
-          team: null
-        };
+  try {
+    const response = await axios.get(`${RANKING_API}/tournament/${tournamentId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
-    })
-  );
-  
-  return {
-    ...ranking,
-    teamsWithDetails
-  };
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la récupération du classement du tournoi ${tournamentId}:`, error);
+    throw error;
+  }
+};
+
+// Mettre à jour le classement d'un tournoi
+export const updateRanking = async (tournamentId, rankingData) => {
+  try {
+    const response = await axios.put(`${RANKING_API}/tournament/${tournamentId}`, rankingData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la mise à jour du classement du tournoi ${tournamentId}:`, error);
+    throw error;
+  }
+};
+
+// Calcule automatiquement le classement en fonction des résultats des matchs
+export const calculateRanking = async (tournamentId) => {
+  try {
+    const response = await axios.post(`${RANKING_API}/calculate/${tournamentId}`, {}, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors du calcul du classement du tournoi ${tournamentId}:`, error);
+    throw error;
+  }
 };
 
 // Mettre à jour le classement d'une équipe

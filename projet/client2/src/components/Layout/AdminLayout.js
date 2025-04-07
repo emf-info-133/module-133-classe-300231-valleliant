@@ -1,114 +1,122 @@
-import React, { useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { AdminContext } from '../../contexts/AdminContext';
+import { FaHome, FaTrophy, FaUsers, FaUsersCog, FaGamepad, FaSignOutAlt, FaChartLine } from 'react-icons/fa';
+import { useAdmin } from '../../context/AdminContext';
 import '../../styles/AdminLayout.css';
 
 const AdminLayout = ({ children }) => {
-  const { admin, logout } = useContext(AdminContext);
+  const { admin, logout, isAuthenticated } = useAdmin();
   const navigate = useNavigate();
   const location = useLocation();
+  const [pageTitle, setPageTitle] = useState('Tableau de bord');
+  
+  // Rediriger vers la page de connexion si non authentifié
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      navigate('/admin/login');
+    }
+  }, [isAuthenticated, navigate]);
+  
+  // Déterminer le titre de la page en fonction de l'URL
+  useEffect(() => {
+    const path = location.pathname;
+    
+    if (path.includes('/tournaments')) {
+      setPageTitle('Gestion des Tournois');
+    } else if (path.includes('/teams')) {
+      setPageTitle('Gestion des Équipes');
+    } else if (path.includes('/users')) {
+      setPageTitle('Gestion des Utilisateurs');
+    } else if (path.includes('/matches')) {
+      setPageTitle('Gestion des Matchs');
+    } else if (path.includes('/rankings')) {
+      setPageTitle('Classements');
+    } else if (path.includes('/dashboard')) {
+      setPageTitle('Tableau de bord');
+    } else if (path.includes('/profile')) {
+      setPageTitle('Profil Administrateur');
+    }
+  }, [location]);
   
   const handleLogout = () => {
     logout();
-    navigate('/login');
-  };
-  
-  // Vérifier si un lien est actif
-  const isActive = (path) => {
-    return location.pathname === path ? 'active' : '';
+    navigate('/admin/login');
   };
   
   return (
     <div className="admin-layout">
       <aside className="admin-sidebar">
-        <div className="sidebar-header">
+        <div className="sidebar-logo">
           <h2>Admin Panel</h2>
         </div>
         
         <div className="admin-info">
-          <div className="admin-avatar">
-            {admin?.name?.charAt(0) || 'A'}
-          </div>
-          <div className="admin-details">
-            <p className="admin-name">{admin?.name || 'Admin'}</p>
-            <p className="admin-email">{admin?.email || 'admin@example.com'}</p>
-          </div>
+          {admin && (
+            <>
+              <div className="admin-avatar">
+                <span>{admin.firstName?.charAt(0) || 'A'}</span>
+              </div>
+              <div className="admin-details">
+                <p className="admin-name">{admin.firstName} {admin.lastName}</p>
+                <p className="admin-email">{admin.email}</p>
+              </div>
+            </>
+          )}
         </div>
         
         <nav className="sidebar-nav">
           <ul>
-            <li className={isActive('/dashboard')}>
-              <Link to="/dashboard">
-                <i className="fas fa-tachometer-alt"></i>
-                Tableau de bord
+            <li>
+              <Link to="/admin/dashboard" className={location.pathname === '/admin/dashboard' ? 'active' : ''}>
+                <FaHome /> <span>Tableau de bord</span>
               </Link>
             </li>
-            <li className={isActive('/tournaments') || location.pathname.includes('/tournament/')}>
-              <Link to="/tournaments">
-                <i className="fas fa-trophy"></i>
-                Tournois
+            <li>
+              <Link to="/admin/tournaments" className={location.pathname.includes('/tournaments') ? 'active' : ''}>
+                <FaTrophy /> <span>Tournois</span>
               </Link>
             </li>
-            <li className={isActive('/teams') || location.pathname.includes('/team/')}>
-              <Link to="/teams">
-                <i className="fas fa-users"></i>
-                Équipes
+            <li>
+              <Link to="/admin/teams" className={location.pathname.includes('/teams') ? 'active' : ''}>
+                <FaUsersCog /> <span>Équipes</span>
               </Link>
             </li>
-            <li className={isActive('/matches') || location.pathname.includes('/match/')}>
-              <Link to="/matches">
-                <i className="fas fa-gamepad"></i>
-                Matchs
+            <li>
+              <Link to="/admin/users" className={location.pathname.includes('/users') ? 'active' : ''}>
+                <FaUsers /> <span>Utilisateurs</span>
               </Link>
             </li>
-            <li className={isActive('/rankings')}>
-              <Link to="/rankings">
-                <i className="fas fa-list-ol"></i>
-                Classements
+            <li>
+              <Link to="/admin/matches" className={location.pathname.includes('/matches') ? 'active' : ''}>
+                <FaGamepad /> <span>Matchs</span>
+              </Link>
+            </li>
+            <li>
+              <Link to="/admin/rankings" className={location.pathname.includes('/rankings') ? 'active' : ''}>
+                <FaChartLine /> <span>Classements</span>
               </Link>
             </li>
           </ul>
         </nav>
         
         <div className="sidebar-footer">
-          <button onClick={handleLogout} className="logout-button">
-            <i className="fas fa-sign-out-alt"></i>
-            Déconnexion
+          <button onClick={handleLogout} className="logout-btn">
+            <FaSignOutAlt /> <span>Déconnexion</span>
           </button>
         </div>
       </aside>
       
-      <div className="admin-content">
+      <main className="admin-content">
         <header className="admin-header">
-          <h1>{getPageTitle(location.pathname)}</h1>
+          <h1>{pageTitle}</h1>
         </header>
         
-        <main className="admin-main">
+        <div className="content-wrapper">
           {children}
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
-};
-
-// Fonction pour obtenir le titre de la page en fonction du chemin
-const getPageTitle = (pathname) => {
-  if (pathname === '/dashboard') return 'Tableau de bord';
-  if (pathname === '/tournaments') return 'Gestion des tournois';
-  if (pathname.includes('/tournament/new')) return 'Créer un tournoi';
-  if (pathname.includes('/tournament/edit')) return 'Modifier le tournoi';
-  if (pathname.includes('/tournament/')) return 'Détails du tournoi';
-  if (pathname === '/teams') return 'Gestion des équipes';
-  if (pathname.includes('/team/new')) return 'Créer une équipe';
-  if (pathname.includes('/team/edit')) return 'Modifier l\'équipe';
-  if (pathname.includes('/team/')) return 'Détails de l\'équipe';
-  if (pathname === '/matches') return 'Gestion des matchs';
-  if (pathname.includes('/match/new')) return 'Créer un match';
-  if (pathname.includes('/match/edit')) return 'Modifier le match';
-  if (pathname.includes('/match/')) return 'Détails du match';
-  if (pathname === '/rankings') return 'Classements';
-  
-  return 'Administration';
 };
 
 export default AdminLayout; 

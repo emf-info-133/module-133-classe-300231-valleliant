@@ -1,60 +1,82 @@
-// Données fictives pour les jeux
-const mockGames = [
-  {
-    id: 1,
-    name: 'League of Legends',
-    description: 'MOBA populaire développé par Riot Games',
-    image: 'https://via.placeholder.com/150/3498db/FFFFFF?text=LoL',
-    teamSize: 5
-  },
-  {
-    id: 2,
-    name: 'Counter-Strike 2',
-    description: 'FPS tactique développé par Valve',
-    image: 'https://via.placeholder.com/150/2ecc71/FFFFFF?text=CS2',
-    teamSize: 5
-  },
-  {
-    id: 3,
-    name: 'Valorant',
-    description: 'FPS tactique développé par Riot Games',
-    image: 'https://via.placeholder.com/150/e74c3c/FFFFFF?text=Valorant',
-    teamSize: 5
-  },
-  {
-    id: 4,
-    name: 'Rocket League',
-    description: 'Jeu de football avec des voitures, développé par Psyonix',
-    image: 'https://via.placeholder.com/150/f39c12/FFFFFF?text=RL',
-    teamSize: 3
-  },
-  {
-    id: 5,
-    name: 'Overwatch 2',
-    description: 'FPS par équipe développé par Blizzard',
-    image: 'https://via.placeholder.com/150/9b59b6/FFFFFF?text=OW2',
-    teamSize: 5
-  }
-];
+import axios from 'axios';
+import { API_URL } from '../config';
+
+// URL de base pour les jeux
+const GAME_API = `${API_URL}/service1/games`;
 
 // Récupérer tous les jeux
 export const getAllGames = async () => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return [...mockGames];
+  try {
+    const response = await axios.get(GAME_API, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la récupération des jeux:', error);
+    throw error;
+  }
 };
 
 // Récupérer un jeu par son ID
 export const getGameById = async (id) => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 300));
-  
-  const gameId = parseInt(id, 10);
-  const game = mockGames.find(g => g.id === gameId);
-  
-  if (!game) {
-    throw new Error('Jeu non trouvé');
+  try {
+    const response = await axios.get(`${GAME_API}/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la récupération du jeu avec l'ID ${id}:`, error);
+    throw error;
   }
-  
-  return { ...game };
+};
+
+// Créer un nouveau jeu
+export const createGame = async (gameData) => {
+  try {
+    const response = await axios.post(GAME_API, gameData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la création du jeu:', error);
+    throw error;
+  }
+};
+
+// Mettre à jour un jeu
+export const updateGame = async (id, gameData) => {
+  try {
+    const response = await axios.put(`${GAME_API}/${id}`, gameData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la mise à jour du jeu avec l'ID ${id}:`, error);
+    throw error;
+  }
+};
+
+// Supprimer un jeu
+export const deleteGame = async (id) => {
+  try {
+    const response = await axios.delete(`${GAME_API}/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la suppression du jeu avec l'ID ${id}:`, error);
+    throw error;
+  }
 }; 

@@ -8,18 +8,29 @@ import TournamentDetails from './pages/tournaments/TournamentDetails';
 import NotFound from './pages/NotFound';
 
 // Import des composants d'administration
-import AdminLogin from './pages/admin/AdminLogin';
-import Dashboard from './pages/admin/Dashboard';
-import TournamentList from './pages/admin/TournamentList';
+import AdminLogin from './pages/AdminLogin';
+import Dashboard from './pages/Dashboard';
+import TournamentList from './pages/tournaments/TournamentList';
 import CreateTournament from './pages/tournaments/CreateTournament';
 import EditTournament from './pages/tournaments/EditTournament';
 import TeamList from './pages/admin/TeamList';
 import MatchList from './pages/admin/MatchList';
 import RankingList from './pages/admin/RankingList';
 
-// Import du contexte et du composant de route protégée
-import { AdminProvider } from './contexts/AdminContext';
-import ProtectedRoute from './components/ProtectedRoute';
+// Import du contexte et des composants de mise en page
+import { AdminProvider } from './context/AdminContext';
+import AdminLayout from './components/Layout/AdminLayout';
+
+// Composant pour les routes protégées
+const ProtectedRoute = ({ children }) => {
+  const isAuthenticated = localStorage.getItem('adminToken') !== null;
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/admin/login" />;
+  }
+  
+  return children;
+};
 
 function App() {
   return (
@@ -29,8 +40,6 @@ function App() {
           {/* Routes publiques */}
           <Route path="/" element={<Home />} />
           <Route path="/tournament/:id" element={<TournamentDetails />} />
-          
-          {/* Routes d'administration */}
           <Route path="/admin/login" element={<AdminLogin />} />
           
           {/* Routes protégées d'administration */}
@@ -38,7 +47,9 @@ function App() {
             path="/admin" 
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <AdminLayout>
+                  <Dashboard />
+                </AdminLayout>
               </ProtectedRoute>
             } 
           />
@@ -46,55 +57,69 @@ function App() {
             path="/admin/dashboard" 
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <AdminLayout>
+                  <Dashboard />
+                </AdminLayout>
               </ProtectedRoute>
             } 
           />
           <Route 
-            path="/tournaments" 
+            path="/admin/tournaments" 
             element={
               <ProtectedRoute>
-                <TournamentList />
+                <AdminLayout>
+                  <TournamentList />
+                </AdminLayout>
               </ProtectedRoute>
             } 
           />
           <Route 
-            path="/tournaments/create" 
+            path="/admin/tournaments/create" 
             element={
               <ProtectedRoute>
-                <CreateTournament />
+                <AdminLayout>
+                  <CreateTournament />
+                </AdminLayout>
               </ProtectedRoute>
             } 
           />
           <Route 
-            path="/tournaments/edit/:id" 
+            path="/admin/tournaments/edit/:id" 
             element={
               <ProtectedRoute>
-                <EditTournament />
+                <AdminLayout>
+                  <EditTournament />
+                </AdminLayout>
               </ProtectedRoute>
             } 
           />
           <Route 
-            path="/teams" 
+            path="/admin/teams" 
             element={
               <ProtectedRoute>
-                <TeamList />
+                <AdminLayout>
+                  <TeamList />
+                </AdminLayout>
               </ProtectedRoute>
             } 
           />
           <Route 
-            path="/matches" 
+            path="/admin/matches" 
             element={
               <ProtectedRoute>
-                <MatchList />
+                <AdminLayout>
+                  <MatchList />
+                </AdminLayout>
               </ProtectedRoute>
             } 
           />
           <Route 
-            path="/rankings" 
+            path="/admin/rankings" 
             element={
               <ProtectedRoute>
-                <RankingList />
+                <AdminLayout>
+                  <RankingList />
+                </AdminLayout>
               </ProtectedRoute>
             } 
           />

@@ -6,8 +6,11 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.6.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-icons": "^5.0.1",
+    "react-router-dom": "^6.22.2",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
@@ -19,8 +22,10 @@
   "scripts": {
     "start": "react-scripts start",
     "dev": "BROWSER=none WDS_SOCKET_HOST=0.0.0.0 react-scripts start",
-    "dev:wsl": "./dev.sh",
+    "dev:wsl": "./wsl-dev.sh",
     "build": "react-scripts build",
+    "build:wsl": "./wsl-build.sh",
+    "start:wsl": "./start-wsl.sh",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

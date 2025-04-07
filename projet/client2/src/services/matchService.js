@@ -1,137 +1,114 @@
-// Données fictives pour les matchs
-let mockMatches = [
-  {
-    id: 1,
-    tournamentId: 1,
-    teamAId: 1,
-    teamBId: 2,
-    scoreA: 3,
-    scoreB: 1,
-    date: '2023-05-20T14:00:00.000Z',
-    status: 'completed',
-    location: 'Arena Principal'
-  },
-  {
-    id: 2,
-    tournamentId: 1,
-    teamAId: 1,
-    teamBId: 2,
-    scoreA: null,
-    scoreB: null,
-    date: '2023-06-05T15:30:00.000Z',
-    status: 'scheduled',
-    location: 'Arena Principal'
-  },
-  {
-    id: 3,
-    tournamentId: 2,
-    teamAId: 3,
-    teamBId: null, // À déterminer
-    scoreA: null,
-    scoreB: null,
-    date: '2023-07-10T16:00:00.000Z',
-    status: 'scheduled',
-    location: 'Stade Régional'
-  }
-];
+import axios from 'axios';
+import { API_URL } from '../config';
+
+// URL de base pour les matchs
+const MATCH_API = `${API_URL}/service1/matches`;
 
 // Récupérer tous les matchs
 export const getAllMatches = async () => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return [...mockMatches];
-};
-
-// Récupérer les matchs d'un tournoi spécifique
-export const getMatchesByTournament = async (tournamentId) => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 400));
-  
-  const tid = parseInt(tournamentId, 10);
-  return mockMatches.filter(match => match.tournamentId === tid);
-};
-
-// Récupérer les matchs d'une équipe spécifique
-export const getMatchesByTeam = async (teamId) => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 400));
-  
-  const tid = parseInt(teamId, 10);
-  return mockMatches.filter(match => match.teamAId === tid || match.teamBId === tid);
+  try {
+    const response = await axios.get(MATCH_API, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la récupération des matchs:', error);
+    throw error;
+  }
 };
 
 // Récupérer un match par son ID
 export const getMatchById = async (id) => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 300));
-  
-  const matchId = parseInt(id, 10);
-  const match = mockMatches.find(m => m.id === matchId);
-  
-  if (!match) {
-    throw new Error('Match non trouvé');
+  try {
+    const response = await axios.get(`${MATCH_API}/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la récupération du match avec l'ID ${id}:`, error);
+    throw error;
   }
-  
-  return { ...match };
+};
+
+// Récupérer les matchs d'un tournoi
+export const getMatchesByTournament = async (tournamentId) => {
+  try {
+    const response = await axios.get(`${MATCH_API}/tournament/${tournamentId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la récupération des matchs du tournoi ${tournamentId}:`, error);
+    throw error;
+  }
+};
+
+// Récupérer les matchs d'une équipe
+export const getMatchesByTeam = async (teamId) => {
+  try {
+    const response = await axios.get(`${MATCH_API}/team/${teamId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la récupération des matchs de l'équipe ${teamId}:`, error);
+    throw error;
+  }
 };
 
 // Créer un nouveau match
 export const createMatch = async (matchData) => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  // Générer un nouvel ID
-  const newId = Math.max(...mockMatches.map(m => m.id), 0) + 1;
-  
-  const newMatch = {
-    id: newId,
-    ...matchData,
-    scoreA: matchData.scoreA !== undefined ? matchData.scoreA : null,
-    scoreB: matchData.scoreB !== undefined ? matchData.scoreB : null,
-    status: matchData.status || 'scheduled'
-  };
-  
-  mockMatches.push(newMatch);
-  
-  return { ...newMatch };
+  try {
+    const response = await axios.post(MATCH_API, matchData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la création du match:', error);
+    throw error;
+  }
 };
 
-// Mettre à jour un match existant
+// Mettre à jour un match
 export const updateMatch = async (id, matchData) => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  const matchId = parseInt(id, 10);
-  const index = mockMatches.findIndex(m => m.id === matchId);
-  
-  if (index === -1) {
-    throw new Error('Match non trouvé');
+  try {
+    const response = await axios.put(`${MATCH_API}/${id}`, matchData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la mise à jour du match avec l'ID ${id}:`, error);
+    throw error;
   }
-  
-  // Mettre à jour les données
-  mockMatches[index] = {
-    ...mockMatches[index],
-    ...matchData
-  };
-  
-  return { ...mockMatches[index] };
 };
 
 // Supprimer un match
 export const deleteMatch = async (id) => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  const matchId = parseInt(id, 10);
-  const initialLength = mockMatches.length;
-  
-  mockMatches = mockMatches.filter(m => m.id !== matchId);
-  
-  if (mockMatches.length === initialLength) {
-    throw new Error('Match non trouvé');
+  try {
+    const response = await axios.delete(`${MATCH_API}/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la suppression du match avec l'ID ${id}:`, error);
+    throw error;
   }
-  
-  return { success: true };
 };
 
 // Mettre à jour le score d'un match

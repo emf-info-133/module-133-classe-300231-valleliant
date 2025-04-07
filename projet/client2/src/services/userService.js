@@ -1,93 +1,128 @@
-// Données fictives pour les utilisateurs
-export const mockUsers = [
-  {
-    id: 1,
-    name: 'Admin Principal',
-    email: 'admin@example.com',
-    role: 'admin',
-    joinDate: '2023-01-01'
-  },
-  {
-    id: 2,
-    name: 'Marie Dupont',
-    email: 'marie@example.com',
-    role: 'player',
-    joinDate: '2023-01-15'
-  },
-  {
-    id: 3,
-    name: 'Pierre Martin',
-    email: 'pierre@example.com',
-    role: 'player',
-    joinDate: '2023-01-16'
-  },
-  {
-    id: 4,
-    name: 'Sophie Bernard',
-    email: 'sophie@example.com',
-    role: 'player',
-    joinDate: '2023-02-01'
-  },
-  {
-    id: 5,
-    name: 'Thomas Petit',
-    email: 'thomas@example.com',
-    role: 'player',
-    joinDate: '2023-01-20'
-  },
-  {
-    id: 6,
-    name: 'Julie Moreau',
-    email: 'julie@example.com',
-    role: 'player',
-    joinDate: '2023-01-25'
-  },
-  {
-    id: 7,
-    name: 'Nicolas Lefebvre',
-    email: 'nicolas@example.com',
-    role: 'player',
-    joinDate: '2023-02-05'
-  }
-];
+import axios from 'axios';
+import { API_URL } from '../config';
+
+// URL de base pour les utilisateurs
+const USER_API = `${API_URL}/service1/users`;
 
 // Récupérer tous les utilisateurs
 export const getAllUsers = async () => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return [...mockUsers];
-};
-
-// Récupérer les utilisateurs par rôle
-export const getUsersByRole = async (role) => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 400));
-  return mockUsers.filter(user => user.role === role);
+  try {
+    const response = await axios.get(USER_API, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la récupération des utilisateurs:', error);
+    throw error;
+  }
 };
 
 // Récupérer un utilisateur par son ID
 export const getUserById = async (id) => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 300));
-  
-  const userId = parseInt(id, 10);
-  const user = mockUsers.find(u => u.id === userId);
-  
-  if (!user) {
-    throw new Error('Utilisateur non trouvé');
+  try {
+    const response = await axios.get(`${USER_API}/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la récupération de l'utilisateur avec l'ID ${id}:`, error);
+    throw error;
   }
-  
-  return { ...user };
+};
+
+// Récupérer les utilisateurs d'une équipe
+export const getUsersByTeam = async (teamId) => {
+  try {
+    const response = await axios.get(`${USER_API}/team/${teamId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la récupération des utilisateurs de l'équipe ${teamId}:`, error);
+    throw error;
+  }
+};
+
+// Récupérer les utilisateurs par rôle
+export const getUsersByRole = async (role) => {
+  try {
+    const response = await axios.get(`${USER_API}/role/${role}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la récupération des utilisateurs avec le rôle ${role}:`, error);
+    throw error;
+  }
 };
 
 // Rechercher des utilisateurs
-export const searchUsers = async (searchTerm) => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  const term = searchTerm.toLowerCase();
-  return mockUsers.filter(user => 
-    user.name.toLowerCase().includes(term) || 
-    user.email.toLowerCase().includes(term)
-  );
+export const searchUsers = async (query) => {
+  try {
+    const response = await axios.get(`${USER_API}/search`, {
+      params: { query },
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la recherche d'utilisateurs avec la requête ${query}:`, error);
+    throw error;
+  }
+};
+
+// Créer un nouvel utilisateur
+export const createUser = async (userData) => {
+  try {
+    const response = await axios.post(USER_API, userData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la création de l\'utilisateur:', error);
+    throw error;
+  }
+};
+
+// Mettre à jour un utilisateur
+export const updateUser = async (id, userData) => {
+  try {
+    const response = await axios.put(`${USER_API}/${id}`, userData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la mise à jour de l'utilisateur avec l'ID ${id}:`, error);
+    throw error;
+  }
+};
+
+// Supprimer un utilisateur
+export const deleteUser = async (id) => {
+  try {
+    const response = await axios.delete(`${USER_API}/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la suppression de l'utilisateur avec l'ID ${id}:`, error);
+    throw error;
+  }
 }; 

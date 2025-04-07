@@ -1,97 +1,92 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { AdminContext } from '../contexts/AdminContext';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAdmin } from '../context/AdminContext';
 import '../styles/AdminLogin.css';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  
-  const { login, isAuthenticated } = useContext(AdminContext);
+  const [localError, setLocalError] = useState('');
+  const { login, isAuthenticated, loading, error } = useAdmin();
   const navigate = useNavigate();
   
-  // Rediriger vers le tableau de bord si déjà connecté
+  // Rediriger si déjà authentifié
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
+    if (isAuthenticated()) {
+      navigate('/admin/dashboard');
     }
   }, [isAuthenticated, navigate]);
   
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLocalError('');
     
+    // Validation simple côté client
     if (!email || !password) {
-      setError('Veuillez remplir tous les champs');
+      setLocalError('Veuillez remplir tous les champs');
       return;
     }
     
     try {
-      setLoading(true);
-      setError('');
-      
-      const result = await login(email, password);
-      
-      if (!result.success) {
-        setError(result.error || 'Identifiants invalides');
-      } else {
-        navigate('/dashboard');
-      }
+      await login({ email, password });
+      navigate('/admin/dashboard');
     } catch (err) {
-      setError('Une erreur est survenue. Veuillez réessayer.');
-      console.error(err);
-    } finally {
-      setLoading(false);
+      // L'erreur est déjà gérée dans le contexte
+      console.error('Erreur de connexion:', err);
     }
   };
   
   return (
     <div className="admin-login-container">
       <div className="admin-login-card">
-        <h1>Administration des Tournois</h1>
-        <p className="login-subtitle">Connexion au panneau d'administration</p>
+        <h1 className="admin-login-title">Connexion Administrateur</h1>
         
-        {error && <div className="error-message">{error}</div>}
+        {(error || localError) && (
+          <div className="admin-login-error">
+            {localError || error}
+          </div>
+        )}
         
-        <form onSubmit={handleSubmit} className="login-form">
-          <div className="form-group">
+        <form className="admin-login-form" onSubmit={handleSubmit}>
+          <div className="admin-login-form-group">
             <label htmlFor="email">Email</label>
             <input
               type="email"
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@example.com"
+              placeholder="Entrez votre email"
               required
+              disabled={loading}
             />
           </div>
           
-          <div className="form-group">
+          <div className="admin-login-form-group">
             <label htmlFor="password">Mot de passe</label>
             <input
               type="password"
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Entrez votre mot de passe"
               required
+              disabled={loading}
             />
           </div>
           
-          <button
-            type="submit"
-            className="login-button"
+          <button 
+            type="submit" 
+            className="admin-login-button"
             disabled={loading}
           >
             {loading ? 'Connexion en cours...' : 'Se connecter'}
           </button>
         </form>
         
-        <div className="login-help">
-          <p>Pour tester l'administration, utilisez :</p>
-          <p>Email: admin@example.com</p>
-          <p>Mot de passe: admin123</p>
+        <div className="admin-login-help">
+          <p>Identifiants de test:</p>
+          <p>Email: admin@tournois.com</p>
+          <p>Password: admin123</p>
         </div>
       </div>
     </div>
