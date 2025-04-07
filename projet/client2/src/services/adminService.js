@@ -2,8 +2,8 @@ import axios from 'axios';
 import { API_URL } from '../config';
 
 // URL de base pour l'authentification et l'administration
-const AUTH_API = `${API_URL}/service1/auth`;
-const ADMIN_API = `${API_URL}/service1/admin`;
+const AUTH_API = `${API_URL}/service2/auth`;
+const ADMIN_API = `${API_URL}/service2/admin`;
 
 // Login administrateur
 export const adminLogin = async (credentials) => {

@@ -5,20 +5,25 @@ public class TournamentDTO {
     private String name;
     private String date;
     private GameDTO game;
-    private AdminDTO admin;
+    private Integer adminId;
     private Boolean status;
 
     // Constructeurs
     public TournamentDTO() {
     }
 
-    public TournamentDTO(Integer id, String name, String date, GameDTO game, AdminDTO admin, Boolean status) {
+    public TournamentDTO(Integer id, String name, String date, GameDTO game, Integer adminId, Boolean status) {
         this.id = id;
         this.name = name;
         this.date = date;
         this.game = game;
-        this.admin = admin;
+        this.adminId = adminId;
         this.status = status;
+    }
+
+    // Constructor simplifié pour serviceRest1
+    public TournamentDTO(Integer id) {
+        this.id = id;
     }
 
     // Getters et Setters
@@ -54,12 +59,12 @@ public class TournamentDTO {
         this.game = game;
     }
 
-    public AdminDTO getAdmin() {
-        return admin;
+    public Integer getAdminId() {
+        return adminId;
     }
 
-    public void setAdmin(AdminDTO admin) {
-        this.admin = admin;
+    public void setAdminId(Integer adminId) {
+        this.adminId = adminId;
     }
 
     public Boolean getStatus() {

@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
 // Données fictives pour les tournois
@@ -61,24 +63,74 @@ mockTeams.forEach(team => {
 });
 
 export const getAllTournaments = async () => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  return [...mockTournaments];
+  try {
+    const response = await axios.get(`${API_URL}/service2/tournaments`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la récupération des tournois:', error);
+    throw error;
+  }
 };
 
 export const getTournamentById = async (tournamentId) => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 300));
-  
-  const id = parseInt(tournamentId, 10);
-  const tournament = mockTournaments.find(t => t.id === id);
-  
-  if (!tournament) {
-    throw new Error('Tournoi non trouvé');
+  try {
+    const response = await axios.get(`${API_URL}/service2/tournaments/${tournamentId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la récupération du tournoi ${tournamentId}:`, error);
+    throw error;
   }
-  
-  return { ...tournament };
+};
+
+export const getOpenTournaments = async () => {
+  try {
+    // Les tournois ouverts ont status = true
+    const response = await axios.get(`${API_URL}/service2/tournaments/open`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la récupération des tournois ouverts:', error);
+    throw error;
+  }
+};
+
+export const getTournamentMatches = async (tournamentId) => {
+  try {
+    const response = await axios.get(`${API_URL}/service2/tournaments/${tournamentId}/matches`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la récupération des matchs du tournoi ${tournamentId}:`, error);
+    throw error;
+  }
+};
+
+export const getTournamentRankings = async (tournamentId) => {
+  try {
+    const response = await axios.get(`${API_URL}/service2/tournaments/${tournamentId}/rankings`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la récupération du classement du tournoi ${tournamentId}:`, error);
+    throw error;
+  }
 };
 
 export const createTeam = async (tournamentId, teamName) => {

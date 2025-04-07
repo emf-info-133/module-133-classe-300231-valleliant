@@ -43,6 +43,20 @@ public class Match {
     @Temporal(TemporalType.DATE)
     @Column(name = "date", nullable = false)
     private Date date;
+    
+    // Constructeurs
+    public Match() {
+    }
+    
+    public Match(Integer id, Tournament tournament, Team team1, Team team2, String score1, String score2, Date date) {
+        this.id = id;
+        this.tournament = tournament;
+        this.team1 = team1;
+        this.team2 = team2;
+        this.score1 = score1;
+        this.score2 = score2;
+        this.date = date;
+    }
 
     // Getters et Setters
     public Integer getId() {

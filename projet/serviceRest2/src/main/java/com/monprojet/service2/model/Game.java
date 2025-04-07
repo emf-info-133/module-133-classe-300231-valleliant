@@ -21,6 +21,16 @@ public class Game {
     
     @Column(name = "type", length = 45, nullable = false)
     private String type;
+    
+    // Constructeurs
+    public Game() {
+    }
+    
+    public Game(Integer id, String name, String type) {
+        this.id = id;
+        this.name = name;
+        this.type = type;
+    }
 
     // Getters et Setters
     public Integer getId() {

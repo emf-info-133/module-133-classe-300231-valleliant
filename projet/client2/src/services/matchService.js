@@ -2,7 +2,7 @@ import axios from 'axios';
 import { API_URL } from '../config';
 
 // URL de base pour les matchs
-const MATCH_API = `${API_URL}/service1/matches`;
+const MATCH_API = `${API_URL}/service2/matches`;
 
 // Récupérer tous les matchs
 export const getAllMatches = async () => {

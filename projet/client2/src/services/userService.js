@@ -2,7 +2,7 @@ import axios from 'axios';
 import { API_URL } from '../config';
 
 // URL de base pour les utilisateurs
-const USER_API = `${API_URL}/service1/users`;
+const USER_API = `${API_URL}/service2/users`;
 
 // Récupérer tous les utilisateurs
 export const getAllUsers = async () => {
@@ -125,4 +125,4 @@ export const deleteUser = async (id) => {
     console.error(`Erreur lors de la suppression de l'utilisateur avec l'ID ${id}:`, error);
     throw error;
   }
-}; 
+};

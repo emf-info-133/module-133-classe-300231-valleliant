@@ -7,5 +7,4 @@ import com.monprojet.service1.models.Tournament;
 
 @Repository
 public interface TournamentRepository extends JpaRepository<Tournament, Integer> {
-    // Méthodes personnalisées si nécessaire
 } 

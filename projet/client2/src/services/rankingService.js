@@ -2,7 +2,7 @@ import axios from 'axios';
 import { API_URL } from '../config';
 
 // URL de base pour les classements
-const RANKING_API = `${API_URL}/service1/rankings`;
+const RANKING_API = `${API_URL}/service2/rankings`;
 
 // Récupérer tous les classements
 export const getAllRankings = async () => {

@@ -1,50 +1,71 @@
-import { mockTeams } from './tournamentService';
+import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
 export const getTeamsByTournament = async (tournamentId) => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 400));
-  
-  const tid = parseInt(tournamentId, 10);
-  return mockTeams.filter(team => team.tournamentId === tid);
+  try {
+    const response = await axios.get(`${API_URL}/service1/teams/tournament/${tournamentId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la récupération des équipes pour le tournoi ${tournamentId}:`, error);
+    throw error;
+  }
 };
 
 export const joinTeam = async (teamId) => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 600));
-  
-  // Récupérer l'utilisateur depuis le localStorage
-  const userStr = localStorage.getItem('user');
-  if (!userStr) {
-    throw new Error('Vous devez être connecté pour rejoindre une équipe');
+  try {
+    // Récupérer l'utilisateur depuis le localStorage
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
+      throw new Error('Vous devez être connecté pour rejoindre une équipe');
+    }
+    
+    const user = JSON.parse(userStr);
+    
+    const response = await axios.post(`${API_URL}/service1/teams/${teamId}/join`, {
+      userId: user.id
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la tentative de rejoindre l'équipe ${teamId}:`, error);
+    throw error;
   }
-  
-  const user = JSON.parse(userStr);
-  const tid = parseInt(teamId, 10);
-  
-  // Trouver l'équipe
-  const team = mockTeams.find(t => t.id === tid);
-  if (!team) {
-    throw new Error('Équipe non trouvée');
+};
+
+export const createTeam = async (tournamentId, teamName) => {
+  try {
+    // Récupérer l'utilisateur depuis le localStorage
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
+      throw new Error('Vous devez être connecté pour créer une équipe');
+    }
+    
+    const user = JSON.parse(userStr);
+    
+    const response = await axios.post(`${API_URL}/service1/teams`, {
+      name: teamName,
+      captainId: user.id,
+      tournamentId: tournamentId
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la création de l\'équipe:', error);
+    throw error;
   }
-  
-  // Vérifier si l'utilisateur est déjà membre
-  if (team.members.some(m => m.id === user.id)) {
-    throw new Error('Vous êtes déjà membre de cette équipe');
-  }
-  
-  // Vérifier si l'équipe est complète
-  if (team.members.length >= team.maxMembers) {
-    throw new Error('L\'équipe est complète');
-  }
-  
-  // Ajouter l'utilisateur à l'équipe
-  team.members.push({
-    id: user.id,
-    name: user.name,
-    email: user.email
-  });
-  
-  return { ...team };
 }; 

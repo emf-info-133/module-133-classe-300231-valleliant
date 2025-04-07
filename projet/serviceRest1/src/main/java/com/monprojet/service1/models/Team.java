@@ -8,15 +8,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "t_teams")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Team {
 
     @Id
@@ -34,4 +28,48 @@ public class Team {
     @ManyToOne
     @JoinColumn(name = "fk_tournaments", nullable = false)
     private Tournament tournament;
+    
+    // Constructeurs
+    public Team() {
+    }
+    
+    public Team(Integer id, String name, User captain, Tournament tournament) {
+        this.id = id;
+        this.name = name;
+        this.captain = captain;
+        this.tournament = tournament;
+    }
+    
+    // Getters et Setters
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public User getCaptain() {
+        return captain;
+    }
+
+    public void setCaptain(User captain) {
+        this.captain = captain;
+    }
+
+    public Tournament getTournament() {
+        return tournament;
+    }
+
+    public void setTournament(Tournament tournament) {
+        this.tournament = tournament;
+    }
 } 

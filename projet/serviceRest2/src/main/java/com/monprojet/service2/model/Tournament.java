@@ -28,12 +28,24 @@ public class Tournament {
     @JoinColumn(name = "fk_game", nullable = false)
     private Game game;
     
-    @ManyToOne
-    @JoinColumn(name = "fk_admin", nullable = false)
-    private Admin admin;
+    @Column(name = "fk_admin", nullable = false)
+    private Integer adminId;
     
     @Column(name = "status", nullable = false)
     private Boolean status;
+    
+    // Constructeurs
+    public Tournament() {
+    }
+    
+    public Tournament(Integer id, String name, String date, Game game, Integer adminId, Boolean status) {
+        this.id = id;
+        this.name = name;
+        this.date = date;
+        this.game = game;
+        this.adminId = adminId;
+        this.status = status;
+    }
 
     // Getters et Setters
     public Integer getId() {
@@ -68,12 +80,12 @@ public class Tournament {
         this.game = game;
     }
 
-    public Admin getAdmin() {
-        return admin;
+    public Integer getAdminId() {
+        return adminId;
     }
 
-    public void setAdmin(Admin admin) {
-        this.admin = admin;
+    public void setAdminId(Integer adminId) {
+        this.adminId = adminId;
     }
 
     public Boolean getStatus() {

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { API_URL } from '../config';
 
 // URL de base pour les équipes
-const TEAM_API = `${API_URL}/service1/teams`;
+const TEAM_API = `${API_URL}/service2/teams`;
 
 // Récupérer toutes les équipes
 export const getAllTeams = async () => {

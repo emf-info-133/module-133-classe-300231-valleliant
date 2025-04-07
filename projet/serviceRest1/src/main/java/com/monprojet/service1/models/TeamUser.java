@@ -8,15 +8,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "tr_team_user")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class TeamUser {
 
     @Id
@@ -31,4 +25,39 @@ public class TeamUser {
     @ManyToOne
     @JoinColumn(name = "fk_teams", nullable = false)
     private Team team;
+    
+    // Constructeurs
+    public TeamUser() {
+    }
+    
+    public TeamUser(Integer id, User user, Team team) {
+        this.id = id;
+        this.user = user;
+        this.team = team;
+    }
+    
+    // Getters et Setters
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Team getTeam() {
+        return team;
+    }
+
+    public void setTeam(Team team) {
+        this.team = team;
+    }
 } 

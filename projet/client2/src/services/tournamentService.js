@@ -2,7 +2,7 @@ import axios from 'axios';
 import { API_URL } from '../config';
 
 // URL de base pour les tournois
-const TOURNAMENT_API = `${API_URL}/service1/tournaments`;
+const TOURNAMENT_API = `${API_URL}/service2/tournaments`;
 
 // Récupérer tous les tournois
 export const getAllTournaments = async () => {
@@ -52,6 +52,13 @@ export const getTournamentById = async (id) => {
 // Créer un nouveau tournoi
 export const createTournament = async (tournamentData) => {
   try {
+    // Récupérer l'admin ID depuis le localStorage
+    const adminStr = localStorage.getItem('adminUser');
+    if (adminStr) {
+      const admin = JSON.parse(adminStr);
+      tournamentData.adminId = admin.id;
+    }
+    
     const response = await axios.post(TOURNAMENT_API, tournamentData, {
       headers: {
         'Content-Type': 'application/json',

@@ -3,13 +3,10 @@ package com.monprojet.service2.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.monprojet.service2.dto.AdminDTO;
 import com.monprojet.service2.dto.GameDTO;
 import com.monprojet.service2.dto.TournamentDTO;
-import com.monprojet.service2.model.Admin;
 import com.monprojet.service2.model.Game;
 import com.monprojet.service2.model.Tournament;
-import com.monprojet.service2.repository.AdminRepository;
 import com.monprojet.service2.repository.GameRepository;
 import com.monprojet.service2.repository.TournamentRepository;
 
@@ -24,15 +21,12 @@ public class TournamentService {
     
     private final TournamentRepository tournamentRepository;
     private final GameRepository gameRepository;
-    private final AdminRepository adminRepository;
     
     @Autowired
     public TournamentService(TournamentRepository tournamentRepository, 
-                             GameRepository gameRepository,
-                             AdminRepository adminRepository) {
+                             GameRepository gameRepository) {
         this.tournamentRepository = tournamentRepository;
         this.gameRepository = gameRepository;
-        this.adminRepository = adminRepository;
     }
     
     // Récupérer tous les tournois
@@ -54,9 +48,8 @@ public class TournamentService {
     @Transactional
     public TournamentDTO addTournament(String name, String date, Integer gameId, Integer adminId, Boolean status) {
         Optional<Game> gameOpt = gameRepository.findById(gameId);
-        Optional<Admin> adminOpt = adminRepository.findById(adminId);
         
-        if (!gameOpt.isPresent() || !adminOpt.isPresent()) {
+        if (!gameOpt.isPresent()) {
             return null;
         }
         
@@ -64,7 +57,7 @@ public class TournamentService {
         tournament.setName(name);
         tournament.setDate(date);
         tournament.setGame(gameOpt.get());
-        tournament.setAdmin(adminOpt.get());
+        tournament.setAdminId(adminId);
         tournament.setStatus(status);
         
         Tournament savedTournament = tournamentRepository.save(tournament);
@@ -94,10 +87,7 @@ public class TournamentService {
         }
         
         if (adminId != null) {
-            Optional<Admin> adminOpt = adminRepository.findById(adminId);
-            if (adminOpt.isPresent()) {
-                tournament.setAdmin(adminOpt.get());
-            }
+            tournament.setAdminId(adminId);
         }
         
         if (status != null) {
@@ -126,18 +116,12 @@ public class TournamentService {
             tournament.getGame().getType()
         );
         
-        AdminDTO adminDTO = new AdminDTO(
-            tournament.getAdmin().getId(),
-            tournament.getAdmin().getName(),
-            tournament.getAdmin().getEmail()
-        );
-        
         return new TournamentDTO(
             tournament.getId(),
             tournament.getName(),
             tournament.getDate(),
             gameDTO,
-            adminDTO,
+            tournament.getAdminId(),
             tournament.getStatus()
         );
     }

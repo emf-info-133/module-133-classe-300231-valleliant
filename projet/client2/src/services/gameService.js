@@ -2,7 +2,7 @@ import axios from 'axios';
 import { API_URL } from '../config';
 
 // URL de base pour les jeux
-const GAME_API = `${API_URL}/service1/games`;
+const GAME_API = `${API_URL}/service2/games`;
 
 // Récupérer tous les jeux
 export const getAllGames = async () => {
