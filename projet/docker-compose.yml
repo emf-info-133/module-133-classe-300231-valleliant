@@ -5,12 +5,12 @@ services:
   service-rest1:
     build: ./serviceRest1
     ports:
-      - "8081:8080"
+      - "8083:8080"
     depends_on:
-      - mysql-db
+      - mysql
     environment:
-      - SPRING_APPLICATION_NAME=ctrlrest1
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/db_alparslanc
+      - SPRING_APPLICATION_NAME=service1
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3308/133-db-alparslanc
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=emf123
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
@@ -18,24 +18,25 @@ services:
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_JPA_SHOW_SQL=true
     networks:
-      - micro
+      - backend
 
   # MySQL Database
-  mysql-db:
+  mysql:
     image: mysql:8.0
-    container_name: mysql-db
+    container_name: mysql
     environment:
       MYSQL_ROOT_PASSWORD: emf123
-      MYSQL_DATABASE: db_alparslanc
+      MYSQL_DATABASE: 133-db-alparslanc
     ports:
       - "3308:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
-      - micro
+      - backend
 
 volumes:
   mysql-data:
 
 networks:
-  micro:
+  backend:
+    driver: bridge
