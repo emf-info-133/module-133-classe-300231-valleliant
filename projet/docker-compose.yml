@@ -39,7 +39,7 @@ services:
     networks:
       - backend
 
-  # MySQL Database
+  # MySQL Database 1
   mysql:
     image: mysql:8.0
     container_name: mysql
@@ -53,6 +53,7 @@ services:
     networks:
       - backend
 
+  # MySQL Database 2
   mysql2:
     image: mysql:8.0
     container_name: mysql2
@@ -62,12 +63,13 @@ services:
     ports:
       - "3307:3306"
     volumes:
-      - mysql-data:/var/lib/mysql
+      - mysql2-data:/var/lib/mysql
     networks:
       - backend
 
 volumes:
   mysql-data:
+  mysql2-data:
 
 networks:
   backend:
