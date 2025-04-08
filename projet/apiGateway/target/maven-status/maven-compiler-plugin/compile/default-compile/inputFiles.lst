@@ -1,0 +1,9 @@
+/home/alparslanc/module-133-classe-300231-valleliant/projet/apiGateway/src/main/java/com/monprojet/apigateway/dto/MatchDTO.java
+/home/alparslanc/module-133-classe-300231-valleliant/projet/apiGateway/src/main/java/com/monprojet/apigateway/controller/GatewayController.java
+/home/alparslanc/module-133-classe-300231-valleliant/projet/apiGateway/src/main/java/com/monprojet/apigateway/dto/TournamentDTO.java
+/home/alparslanc/module-133-classe-300231-valleliant/projet/apiGateway/src/main/java/com/monprojet/apigateway/dto/GameDTO.java
+/home/alparslanc/module-133-classe-300231-valleliant/projet/apiGateway/src/main/java/com/monprojet/apigateway/dto/TeamDTO.java
+/home/alparslanc/module-133-classe-300231-valleliant/projet/apiGateway/src/main/java/com/monprojet/apigateway/service/GatewayService.java
+/home/alparslanc/module-133-classe-300231-valleliant/projet/apiGateway/src/main/java/com/monprojet/apigateway/dto/UserDTO.java
+/home/alparslanc/module-133-classe-300231-valleliant/projet/apiGateway/src/main/java/com/monprojet/apigateway/dto/TournamentWithAdminDTO.java
+/home/alparslanc/module-133-classe-300231-valleliant/projet/apiGateway/src/main/java/com/monprojet/apigateway/ApiGatewayApplication.java
