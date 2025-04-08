@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   # API Gateway
-  apiGateway:
+  apigateway:
     build: ./apiGateway
     ports:
       - "8080:8080"
