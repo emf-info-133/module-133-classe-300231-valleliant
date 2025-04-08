@@ -1,19 +1,14 @@
 package com.monprojet.service2.repository;
 
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
-
-import com.monprojet.service2.model.Match;
-import com.monprojet.service2.model.Team;
-import com.monprojet.service2.model.Tournament;
-
 import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import com.monprojet.service2.model.Match;
 
 @Repository
-public interface MatchRepository extends CrudRepository<Match, Integer> {
-    // Trouver les matchs par tournoi
-    List<Match> findByTournament(Tournament tournament);
+public interface MatchRepository extends JpaRepository<Match, Integer> {
+    List<Match> findByTeam1IdOrTeam2Id(Integer team1Id, Integer team2Id);
     
-    // Trouver les matchs par équipe
-    List<Match> findByTeam1OrTeam2(Team team1, Team team2);
-} 
+    // Méthode existante pour filtrer par tournoi
+    List<Match> findByTournamentId(Integer tournamentId);
+}
