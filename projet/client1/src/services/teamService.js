@@ -1,10 +1,11 @@
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+const GATEWAY_API = `${API_URL}/gateway`;
 
 export const getTeamsByTournament = async (tournamentId) => {
   try {
-    const response = await axios.get(`${API_URL}/service1/teams/tournament/${tournamentId}`, {
+    const response = await axios.get(`${GATEWAY_API}/tournaments/${tournamentId}/teams`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('userToken')}`
       }
@@ -12,6 +13,20 @@ export const getTeamsByTournament = async (tournamentId) => {
     return response.data;
   } catch (error) {
     console.error(`Erreur lors de la récupération des équipes pour le tournoi ${tournamentId}:`, error);
+    throw error;
+  }
+};
+
+export const getTeamById = async (teamId) => {
+  try {
+    const response = await axios.get(`${GATEWAY_API}/teams/${teamId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la récupération de l'équipe ${teamId}:`, error);
     throw error;
   }
 };
@@ -26,7 +41,7 @@ export const joinTeam = async (teamId) => {
     
     const user = JSON.parse(userStr);
     
-    const response = await axios.post(`${API_URL}/service1/teams/${teamId}/join`, {
+    const response = await axios.post(`${GATEWAY_API}/teams/${teamId}/join`, {
       userId: user.id
     }, {
       headers: {
@@ -52,7 +67,7 @@ export const createTeam = async (tournamentId, teamName) => {
     
     const user = JSON.parse(userStr);
     
-    const response = await axios.post(`${API_URL}/service1/teams`, {
+    const response = await axios.post(`${GATEWAY_API}/teams`, {
       name: teamName,
       captainId: user.id,
       tournamentId: tournamentId

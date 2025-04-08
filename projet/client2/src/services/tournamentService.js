@@ -1,13 +1,13 @@
 import axios from 'axios';
 import { API_URL } from '../config';
 
-// URL de base pour les tournois
-const TOURNAMENT_API = `${API_URL}/service2/tournaments`;
+// URL de base pour les tournois via la passerelle
+const GATEWAY_API = `${API_URL}/gateway`;
 
 // Récupérer tous les tournois
 export const getAllTournaments = async () => {
   try {
-    const response = await axios.get(TOURNAMENT_API, {
+    const response = await axios.get(`${GATEWAY_API}/tournaments`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -22,7 +22,7 @@ export const getAllTournaments = async () => {
 // Récupérer les tournois gérés par un administrateur
 export const getTournamentsByAdmin = async (adminId) => {
   try {
-    const response = await axios.get(`${TOURNAMENT_API}/admin/${adminId}`, {
+    const response = await axios.get(`${GATEWAY_API}/tournaments/admin/${adminId}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -37,7 +37,7 @@ export const getTournamentsByAdmin = async (adminId) => {
 // Récupérer un tournoi par son ID
 export const getTournamentById = async (id) => {
   try {
-    const response = await axios.get(`${TOURNAMENT_API}/${id}`, {
+    const response = await axios.get(`${GATEWAY_API}/tournaments/${id}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -45,6 +45,21 @@ export const getTournamentById = async (id) => {
     return response.data;
   } catch (error) {
     console.error(`Erreur lors de la récupération du tournoi avec l'ID ${id}:`, error);
+    throw error;
+  }
+};
+
+// Récupérer un tournoi avec les informations de l'administrateur
+export const getTournamentWithAdmin = async (id) => {
+  try {
+    const response = await axios.get(`${GATEWAY_API}/tournaments/${id}/withAdmin`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la récupération du tournoi avec admin ${id}:`, error);
     throw error;
   }
 };
@@ -59,7 +74,7 @@ export const createTournament = async (tournamentData) => {
       tournamentData.adminId = admin.id;
     }
     
-    const response = await axios.post(TOURNAMENT_API, tournamentData, {
+    const response = await axios.post(`${GATEWAY_API}/tournaments`, tournamentData, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -75,7 +90,7 @@ export const createTournament = async (tournamentData) => {
 // Mettre à jour un tournoi
 export const updateTournament = async (id, tournamentData) => {
   try {
-    const response = await axios.put(`${TOURNAMENT_API}/${id}`, tournamentData, {
+    const response = await axios.put(`${GATEWAY_API}/tournaments/${id}`, tournamentData, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -91,7 +106,7 @@ export const updateTournament = async (id, tournamentData) => {
 // Supprimer un tournoi
 export const deleteTournament = async (id) => {
   try {
-    const response = await axios.delete(`${TOURNAMENT_API}/${id}`, {
+    const response = await axios.delete(`${GATEWAY_API}/tournaments/${id}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }

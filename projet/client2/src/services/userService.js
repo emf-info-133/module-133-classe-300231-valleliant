@@ -1,13 +1,13 @@
 import axios from 'axios';
 import { API_URL } from '../config';
 
-// URL de base pour les utilisateurs
-const USER_API = `${API_URL}/service2/users`;
+// URL de base via la passerelle
+const GATEWAY_API = `${API_URL}/gateway`;
 
 // Récupérer tous les utilisateurs
 export const getAllUsers = async () => {
   try {
-    const response = await axios.get(USER_API, {
+    const response = await axios.get(`${GATEWAY_API}/users`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -22,7 +22,7 @@ export const getAllUsers = async () => {
 // Récupérer un utilisateur par son ID
 export const getUserById = async (id) => {
   try {
-    const response = await axios.get(`${USER_API}/${id}`, {
+    const response = await axios.get(`${GATEWAY_API}/users/${id}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -37,7 +37,7 @@ export const getUserById = async (id) => {
 // Récupérer les utilisateurs d'une équipe
 export const getUsersByTeam = async (teamId) => {
   try {
-    const response = await axios.get(`${USER_API}/team/${teamId}`, {
+    const response = await axios.get(`${GATEWAY_API}/teams/${teamId}/users`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -52,7 +52,7 @@ export const getUsersByTeam = async (teamId) => {
 // Récupérer les utilisateurs par rôle
 export const getUsersByRole = async (role) => {
   try {
-    const response = await axios.get(`${USER_API}/role/${role}`, {
+    const response = await axios.get(`${GATEWAY_API}/users/role/${role}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -67,7 +67,7 @@ export const getUsersByRole = async (role) => {
 // Rechercher des utilisateurs
 export const searchUsers = async (query) => {
   try {
-    const response = await axios.get(`${USER_API}/search`, {
+    const response = await axios.get(`${GATEWAY_API}/users/search`, {
       params: { query },
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -83,7 +83,7 @@ export const searchUsers = async (query) => {
 // Créer un nouvel utilisateur
 export const createUser = async (userData) => {
   try {
-    const response = await axios.post(USER_API, userData, {
+    const response = await axios.post(`${GATEWAY_API}/users`, userData, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -99,7 +99,7 @@ export const createUser = async (userData) => {
 // Mettre à jour un utilisateur
 export const updateUser = async (id, userData) => {
   try {
-    const response = await axios.put(`${USER_API}/${id}`, userData, {
+    const response = await axios.put(`${GATEWAY_API}/users/${id}`, userData, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -115,7 +115,7 @@ export const updateUser = async (id, userData) => {
 // Supprimer un utilisateur
 export const deleteUser = async (id) => {
   try {
-    const response = await axios.delete(`${USER_API}/${id}`, {
+    const response = await axios.delete(`${GATEWAY_API}/users/${id}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }

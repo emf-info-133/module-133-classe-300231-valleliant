@@ -1,13 +1,13 @@
 import axios from 'axios';
 import { API_URL } from '../config';
 
-// URL de base pour les matchs
-const MATCH_API = `${API_URL}/service2/matches`;
+// URL de base pour les matchs via la passerelle
+const GATEWAY_API = `${API_URL}/gateway`;
 
 // Récupérer tous les matchs
 export const getAllMatches = async () => {
   try {
-    const response = await axios.get(MATCH_API, {
+    const response = await axios.get(`${GATEWAY_API}/matches`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -22,7 +22,7 @@ export const getAllMatches = async () => {
 // Récupérer un match par son ID
 export const getMatchById = async (id) => {
   try {
-    const response = await axios.get(`${MATCH_API}/${id}`, {
+    const response = await axios.get(`${GATEWAY_API}/matches/${id}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -37,7 +37,7 @@ export const getMatchById = async (id) => {
 // Récupérer les matchs d'un tournoi
 export const getMatchesByTournament = async (tournamentId) => {
   try {
-    const response = await axios.get(`${MATCH_API}/tournament/${tournamentId}`, {
+    const response = await axios.get(`${GATEWAY_API}/tournaments/${tournamentId}/matches`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -52,7 +52,7 @@ export const getMatchesByTournament = async (tournamentId) => {
 // Récupérer les matchs d'une équipe
 export const getMatchesByTeam = async (teamId) => {
   try {
-    const response = await axios.get(`${MATCH_API}/team/${teamId}`, {
+    const response = await axios.get(`${GATEWAY_API}/teams/${teamId}/matches`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -67,7 +67,7 @@ export const getMatchesByTeam = async (teamId) => {
 // Créer un nouveau match
 export const createMatch = async (matchData) => {
   try {
-    const response = await axios.post(MATCH_API, matchData, {
+    const response = await axios.post(`${GATEWAY_API}/matches`, matchData, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -83,7 +83,7 @@ export const createMatch = async (matchData) => {
 // Mettre à jour un match
 export const updateMatch = async (id, matchData) => {
   try {
-    const response = await axios.put(`${MATCH_API}/${id}`, matchData, {
+    const response = await axios.put(`${GATEWAY_API}/matches/${id}`, matchData, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -99,7 +99,7 @@ export const updateMatch = async (id, matchData) => {
 // Supprimer un match
 export const deleteMatch = async (id) => {
   try {
-    const response = await axios.delete(`${MATCH_API}/${id}`, {
+    const response = await axios.delete(`${GATEWAY_API}/matches/${id}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -112,24 +112,20 @@ export const deleteMatch = async (id) => {
 };
 
 // Mettre à jour le score d'un match
-export const updateMatchScore = async (id, scoreA, scoreB) => {
-  // Simuler une latence réseau
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  const matchId = parseInt(id, 10);
-  const index = mockMatches.findIndex(m => m.id === matchId);
-  
-  if (index === -1) {
-    throw new Error('Match non trouvé');
+export const updateMatchScore = async (id, score1, score2) => {
+  try {
+    const response = await axios.put(`${GATEWAY_API}/matches/${id}/score`, {
+      score1: score1,
+      score2: score2
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erreur lors de la mise à jour du score du match ${id}:`, error);
+    throw error;
   }
-  
-  // Mettre à jour le score
-  mockMatches[index] = {
-    ...mockMatches[index],
-    scoreA: scoreA,
-    scoreB: scoreB,
-    status: 'completed'
-  };
-  
-  return { ...mockMatches[index] };
 }; 

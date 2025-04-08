@@ -1,14 +1,13 @@
 import axios from 'axios';
 import { API_URL } from '../config';
 
-// URL de base pour l'authentification et l'administration
-const AUTH_API = `${API_URL}/service2/auth`;
-const ADMIN_API = `${API_URL}/service2/admin`;
+// URL de base pour l'authentification et l'administration via la passerelle
+const GATEWAY_API = `${API_URL}/gateway`;
 
 // Login administrateur
 export const adminLogin = async (credentials) => {
   try {
-    const response = await axios.post(`${AUTH_API}/admin/login`, credentials, {
+    const response = await axios.post(`${GATEWAY_API}/auth/admin/login`, credentials, {
       headers: {
         'Content-Type': 'application/json'
       }
@@ -36,7 +35,7 @@ export const adminLogout = () => {
 // Récupérer le profil de l'administrateur connecté
 export const getAdminProfile = async () => {
   try {
-    const response = await axios.get(`${ADMIN_API}/profile`, {
+    const response = await axios.get(`${GATEWAY_API}/admin/profile`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -57,7 +56,7 @@ export const validateToken = async () => {
       return false;
     }
     
-    const response = await axios.get(`${AUTH_API}/validate`, {
+    const response = await axios.get(`${GATEWAY_API}/auth/validate`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -73,7 +72,7 @@ export const validateToken = async () => {
 // Mise à jour du profil administrateur
 export const updateAdminProfile = async (profileData) => {
   try {
-    const response = await axios.put(`${ADMIN_API}/profile`, profileData, {
+    const response = await axios.put(`${GATEWAY_API}/admin/profile`, profileData, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -95,7 +94,7 @@ export const updateAdminProfile = async (profileData) => {
 // Changer le mot de passe de l'administrateur
 export const changeAdminPassword = async (passwordData) => {
   try {
-    const response = await axios.put(`${ADMIN_API}/change-password`, passwordData, {
+    const response = await axios.put(`${GATEWAY_API}/admin/change-password`, passwordData, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`

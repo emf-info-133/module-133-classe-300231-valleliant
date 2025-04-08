@@ -1,13 +1,13 @@
 import axios from 'axios';
 import { API_URL } from '../config';
 
-// URL de base pour les équipes
-const TEAM_API = `${API_URL}/service2/teams`;
+// URL de base via la passerelle
+const GATEWAY_API = `${API_URL}/gateway`;
 
 // Récupérer toutes les équipes
 export const getAllTeams = async () => {
   try {
-    const response = await axios.get(TEAM_API, {
+    const response = await axios.get(`${GATEWAY_API}/teams`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -22,7 +22,7 @@ export const getAllTeams = async () => {
 // Récupérer les équipes d'un tournoi
 export const getTeamsByTournament = async (tournamentId) => {
   try {
-    const response = await axios.get(`${TEAM_API}/tournament/${tournamentId}`, {
+    const response = await axios.get(`${GATEWAY_API}/tournaments/${tournamentId}/teams`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -37,7 +37,7 @@ export const getTeamsByTournament = async (tournamentId) => {
 // Récupérer une équipe par son ID
 export const getTeamById = async (id) => {
   try {
-    const response = await axios.get(`${TEAM_API}/${id}`, {
+    const response = await axios.get(`${GATEWAY_API}/teams/${id}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -52,7 +52,7 @@ export const getTeamById = async (id) => {
 // Créer une nouvelle équipe
 export const createTeam = async (teamData) => {
   try {
-    const response = await axios.post(TEAM_API, teamData, {
+    const response = await axios.post(`${GATEWAY_API}/teams`, teamData, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -68,7 +68,7 @@ export const createTeam = async (teamData) => {
 // Mettre à jour une équipe
 export const updateTeam = async (id, teamData) => {
   try {
-    const response = await axios.put(`${TEAM_API}/${id}`, teamData, {
+    const response = await axios.put(`${GATEWAY_API}/teams/${id}`, teamData, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -84,7 +84,7 @@ export const updateTeam = async (id, teamData) => {
 // Supprimer une équipe
 export const deleteTeam = async (id) => {
   try {
-    const response = await axios.delete(`${TEAM_API}/${id}`, {
+    const response = await axios.delete(`${GATEWAY_API}/teams/${id}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }

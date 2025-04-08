@@ -1,13 +1,13 @@
 import axios from 'axios';
 import { API_URL } from '../config';
 
-// URL de base pour les jeux
-const GAME_API = `${API_URL}/service2/games`;
+// URL de base pour les jeux via la passerelle
+const GATEWAY_API = `${API_URL}/gateway`;
 
 // Récupérer tous les jeux
 export const getAllGames = async () => {
   try {
-    const response = await axios.get(GAME_API, {
+    const response = await axios.get(`${GATEWAY_API}/games`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -22,7 +22,7 @@ export const getAllGames = async () => {
 // Récupérer un jeu par son ID
 export const getGameById = async (id) => {
   try {
-    const response = await axios.get(`${GAME_API}/${id}`, {
+    const response = await axios.get(`${GATEWAY_API}/games/${id}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
@@ -37,7 +37,7 @@ export const getGameById = async (id) => {
 // Créer un nouveau jeu
 export const createGame = async (gameData) => {
   try {
-    const response = await axios.post(GAME_API, gameData, {
+    const response = await axios.post(`${GATEWAY_API}/games`, gameData, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -53,7 +53,7 @@ export const createGame = async (gameData) => {
 // Mettre à jour un jeu
 export const updateGame = async (id, gameData) => {
   try {
-    const response = await axios.put(`${GAME_API}/${id}`, gameData, {
+    const response = await axios.put(`${GATEWAY_API}/games/${id}`, gameData, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -69,7 +69,7 @@ export const updateGame = async (id, gameData) => {
 // Supprimer un jeu
 export const deleteGame = async (id) => {
   try {
-    const response = await axios.delete(`${GAME_API}/${id}`, {
+    const response = await axios.delete(`${GATEWAY_API}/games/${id}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
       }
