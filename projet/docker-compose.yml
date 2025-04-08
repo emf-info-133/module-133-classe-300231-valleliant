@@ -1,6 +1,17 @@
 version: '3.8'
 
 services:
+  # API Gateway
+  apiGateway:
+    build: ./apiGateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - service-rest1
+      - service-rest2
+    networks:
+      - backend
+
   # Service REST 1
   service-rest1:
     build: ./serviceRest1
