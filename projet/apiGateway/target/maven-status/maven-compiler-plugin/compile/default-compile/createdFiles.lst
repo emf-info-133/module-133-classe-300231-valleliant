@@ -4,6 +4,7 @@ com/monprojet/apigateway/dto/TeamDTO.class
 com/monprojet/apigateway/controller/GatewayController.class
 com/monprojet/apigateway/dto/UserDTO.class
 com/monprojet/apigateway/service/GatewayService.class
+com/monprojet/apigateway/config/GatewayConfig.class
 com/monprojet/apigateway/dto/TournamentDTO.class
 com/monprojet/apigateway/dto/MatchDTO.class
 com/monprojet/apigateway/dto/GameDTO.class
