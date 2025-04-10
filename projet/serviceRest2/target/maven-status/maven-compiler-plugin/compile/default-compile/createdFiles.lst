@@ -9,8 +9,8 @@ com/monprojet/service2/model/Game.class
 com/monprojet/service2/ServiceRest2Application.class
 com/monprojet/service2/repository/MatchRepository.class
 com/monprojet/service2/service/GameService.class
-com/monprojet/service2/service/MatchService.class
 com/monprojet/service2/dto/GameDTO.class
+com/monprojet/service2/service/MatchService.class
 com/monprojet/service2/dto/TournamentDTO.class
 com/monprojet/service2/repository/GameRepository.class
 com/monprojet/service2/model/Match.class
