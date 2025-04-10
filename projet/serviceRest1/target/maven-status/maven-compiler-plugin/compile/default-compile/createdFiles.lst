@@ -2,9 +2,9 @@ com/monprojet/service1/services/TeamService.class
 com/monprojet/service1/repositories/UserRepository.class
 com/monprojet/service1/models/User.class
 com/monprojet/service1/Service1Application.class
+com/monprojet/service1/services/CustomUserDetailsService.class
 com/monprojet/service1/dto/TeamDTO.class
 com/monprojet/service1/controllers/TeamController.class
-com/monprojet/service1/config/OpenApiConfig.class
 com/monprojet/service1/services/UserService.class
 com/monprojet/service1/controllers/UserController.class
 com/monprojet/service1/models/TeamUser.class
