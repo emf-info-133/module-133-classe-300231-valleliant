@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.monprojet.service1.dto.UserDTO;
 import com.monprojet.service1.models.User;
@@ -13,10 +14,12 @@ import com.monprojet.service1.repositories.UserRepository;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // Récupérer tous les utilisateurs
@@ -36,6 +39,8 @@ public class UserService {
 
     // Amélioré : Récupérer un utilisateur par nom et lever une exception s'il n'est
     // pas trouvé
+    
+
     public UserDTO getUserByName(String name) {
         return userRepository.findByName(name)
                   .map(user -> new UserDTO(user.getId(), user.getName(), user.getEmail()))
@@ -45,13 +50,12 @@ public class UserService {
     
 
     // Créer un utilisateur
-    public UserDTO createUser(UserDTO userDTO, String password) {
+    public UserDTO createUser(UserDTO userDTO, String rawPassword) {
+        String hashedPassword = passwordEncoder.encode(rawPassword);
         User user = new User();
         user.setName(userDTO.getName());
         user.setEmail(userDTO.getEmail());
-        user.setPassword(password); // Vous pouvez appliquer un encodeur de mot de passe ici
-        user.setIsAdmin(0); // Par défaut, l'utilisateur n'est pas admin
-
+        user.setPassword(hashedPassword);
         User savedUser = userRepository.save(user);
         return new UserDTO(savedUser.getId(), savedUser.getName(), savedUser.getEmail());
     }

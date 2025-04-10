@@ -7,6 +7,6 @@ import com.monprojet.service1.models.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
-    // Utiliser Optional pour mieux gérer l'absence d'utilisateur
+    Optional<User> findByEmail(String email);
     Optional<User> findByName(String name);
 }
