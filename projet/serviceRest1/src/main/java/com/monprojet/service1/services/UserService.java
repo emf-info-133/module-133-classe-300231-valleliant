@@ -49,14 +49,21 @@ public class UserService {
     
     
 
-    // Créer un utilisateur
+    // Créer un utilisateur avec mot de passe haché
     public UserDTO createUser(UserDTO userDTO, String rawPassword) {
+        // Hachage du mot de passe
         String hashedPassword = passwordEncoder.encode(rawPassword);
+
+        // Créer l'entité User
         User user = new User();
         user.setName(userDTO.getName());
         user.setEmail(userDTO.getEmail());
-        user.setPassword(hashedPassword);
+        user.setPassword(hashedPassword);  // Stocker le mot de passe haché
+
+        // Sauvegarder l'utilisateur dans la base de données
         User savedUser = userRepository.save(user);
+
+        // Retourner le DTO
         return new UserDTO(savedUser.getId(), savedUser.getName(), savedUser.getEmail());
     }
 

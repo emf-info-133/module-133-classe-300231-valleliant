@@ -4,7 +4,6 @@ com/monprojet/service1/repositories/UserRepository.class
 com/monprojet/service1/models/User.class
 com/monprojet/service1/Service1Application.class
 com/monprojet/service1/controllers/LoginController$LoginRequest.class
-com/monprojet/service1/services/CustomUserDetailsService.class
 com/monprojet/service1/controllers/RegisterController.class
 com/monprojet/service1/controllers/RegisterController$RegisterRequest.class
 com/monprojet/service1/dto/TeamDTO.class
@@ -12,7 +11,9 @@ com/monprojet/service1/controllers/TeamController.class
 com/monprojet/service1/services/UserService.class
 com/monprojet/service1/config/SecurityConfig.class
 com/monprojet/service1/controllers/UserController.class
+com/monprojet/service1/security/CustomUserDetailsService.class
 com/monprojet/service1/models/TeamUser.class
+com/monprojet/service1/security/JwtTokenProvider.class
 com/monprojet/service1/repositories/TeamRepository.class
 com/monprojet/service1/dto/UserDTO.class
 com/monprojet/service1/models/Team.class

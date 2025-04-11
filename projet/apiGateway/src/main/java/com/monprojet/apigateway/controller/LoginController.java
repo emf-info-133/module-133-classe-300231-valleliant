@@ -1,61 +1,74 @@
 package com.monprojet.apigateway.controller;
- 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
-import org.springframework.security.authentication.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.security.core.AuthenticationException;
 
- 
 @RestController
 @RequestMapping("/auth")
 @Tag(name = "Authentification", description = "Endpoints pour login et logout")
 public class LoginController {
- 
-    private final AuthenticationManager authenticationManager;
+
+    private final RestTemplate restTemplate;
+    private final String serviceUrl = "http://service1:port/auth/login"; // URL du service backend
+
     @Autowired
-    public LoginController(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
+    public LoginController(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
+
     public static class LoginRequest {
         private String email;
         private String password;
+
         // Getters et Setters
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
     }
+
     @PostMapping("/login")
-    @Operation(summary = "Authentifier un utilisateur", description = "Vérifie les identifiants et crée une session")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
-        try {
-            UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
-            Authentication authResult = authenticationManager.authenticate(authToken);
-            SecurityContextHolder.getContext().setAuthentication(authResult);
-            HttpSession session = request.getSession(true);
-            session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-            return ResponseEntity.ok("Login réussi");
-        } catch (AuthenticationException ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                                 .body("Login échoué : " + ex.getMessage());
-        }
+    @Operation(summary = "Authentifier un utilisateur", description = "Transmet les identifiants au service backend pour authentification")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        // Transmettre la requête au service backend pour authentification
+        ResponseEntity<String> response = restTemplate.exchange(
+            serviceUrl,
+            HttpMethod.POST,
+            new HttpEntity<>(loginRequest),
+            String.class
+        );
+
+        // Retourner la réponse du service backend
+        return response;
     }
+
     @PostMapping("/logout")
-    @Operation(summary = "Déconnecter un utilisateur", description = "Invalide la session en cours")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
-        SecurityContextHolder.clearContext();
-        return ResponseEntity.ok("Déconnexion réussie");
+    @Operation(summary = "Déconnecter un utilisateur", description = "Transmet la requête de déconnexion au service backend")
+    public ResponseEntity<?> logout() {
+        // URL du service backend pour la déconnexion
+        String serviceLogoutUrl = "http://service1-host:port/auth/logout";
+        ResponseEntity<String> response = restTemplate.exchange(
+            serviceLogoutUrl,
+            HttpMethod.POST,
+            null,
+            String.class
+        );
+
+        return response;
     }
 }

@@ -5,14 +5,10 @@ com/monprojet/apigateway/dto/TournamentWithAdminDTO.class
 com/monprojet/apigateway/ApiGatewayApplication.class
 com/monprojet/apigateway/controller/LoginController$LoginRequest.class
 com/monprojet/apigateway/controller/RegisterController.class
-com/monprojet/apigateway/service/CustomUserDetailsService.class
 com/monprojet/apigateway/dto/UserDTO.class
-com/monprojet/apigateway/model/User.class
 com/monprojet/apigateway/controller/GatewayController.class
 com/monprojet/apigateway/controller/RegisterController$RegisterRequest.class
 com/monprojet/apigateway/service/GatewayService.class
 com/monprojet/apigateway/config/GatewayConfig.class
-com/monprojet/apigateway/repository/UserRepository.class
 com/monprojet/apigateway/dto/TournamentDTO.class
-com/monprojet/apigateway/config/SecurityConfig.class
 com/monprojet/apigateway/dto/GameDTO.class

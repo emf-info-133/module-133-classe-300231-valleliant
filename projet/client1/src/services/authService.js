@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
-const GATEWAY_API = `${API_URL}/gateway`;
+const GATEWAY_API = `${API_URL}`;
 
 export const loginUser = async (email, password) => {
   try {
