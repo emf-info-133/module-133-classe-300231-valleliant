@@ -3,8 +3,8 @@ package com.monprojet.apigateway.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import com.monprojet.apigateway.dto.UserDTO;
-import com.monprojet.apigateway.service.GatewayService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -13,14 +13,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Inscription", description = "Endpoint pour créer un compte utilisateur")
 public class RegisterController {
 
-    private final GatewayService gatewayService;
+    private final RestTemplate restTemplate;
+    private final String serviceUrl = "http://service-rest1:8082/register";  // URL de l'API backend (service1)
 
     @Autowired
-    public RegisterController(GatewayService gatewayService) {
-        this.gatewayService = gatewayService;
+    public RegisterController(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
-    // DTO de la requête d'inscription
     public static class RegisterRequest {
         private String name;
         private String email;
@@ -38,13 +38,19 @@ public class RegisterController {
     @PostMapping
     @Operation(summary = "Créer un compte utilisateur", description = "Inscrit un nouvel utilisateur avec hash du mot de passe")
     public ResponseEntity<UserDTO> register(@RequestBody RegisterRequest registerRequest) {
-        // Créer un objet UserDTO sans mot de passe (car le mot de passe sera haché dans GatewayService)
+        // Construire le payload de la requête
         UserDTO userDTO = new UserDTO(null, registerRequest.getName(), registerRequest.getEmail());
+
+        // Faire appel à l'API backend pour créer l'utilisateur
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<UserDTO> request = new HttpEntity<>(userDTO, headers);
         
-        // Appeler la méthode du service Gateway pour créer l'utilisateur
-        UserDTO createdUser = gatewayService.createUser(userDTO, registerRequest.getPassword());
+        // Appel REST vers service1 (le backend)
+        ResponseEntity<UserDTO> response = restTemplate.exchange(serviceUrl, HttpMethod.POST, request, UserDTO.class);
         
-        // Répondre avec l'utilisateur créé
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        // Retourner la réponse du backend
+        return ResponseEntity.status(HttpStatus.CREATED).body(response.getBody());
     }
 }

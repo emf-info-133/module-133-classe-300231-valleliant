@@ -6,6 +6,9 @@
 /home/ceyha/module-133-classe-300231-valleliant-1/projet/apiGateway/src/main/java/com/monprojet/apigateway/dto/TeamDTO.java
 /home/ceyha/module-133-classe-300231-valleliant-1/projet/apiGateway/src/main/java/com/monprojet/apigateway/dto/TournamentDTO.java
 /home/ceyha/module-133-classe-300231-valleliant-1/projet/apiGateway/src/main/java/com/monprojet/apigateway/dto/UserDTO.java
+/home/ceyha/module-133-classe-300231-valleliant-1/projet/apiGateway/src/main/java/com/monprojet/apigateway/config/SecurityConfig.java
+/home/ceyha/module-133-classe-300231-valleliant-1/projet/apiGateway/src/main/java/com/monprojet/apigateway/config/JwtUtils.java
+/home/ceyha/module-133-classe-300231-valleliant-1/projet/apiGateway/src/main/java/com/monprojet/apigateway/config/JwtAuthFilter.java
 /home/ceyha/module-133-classe-300231-valleliant-1/projet/apiGateway/src/main/java/com/monprojet/apigateway/controller/RegisterController.java
 /home/ceyha/module-133-classe-300231-valleliant-1/projet/apiGateway/src/main/java/com/monprojet/apigateway/ApiGatewayApplication.java
 /home/ceyha/module-133-classe-300231-valleliant-1/projet/apiGateway/src/main/java/com/monprojet/apigateway/dto/TournamentWithAdminDTO.java

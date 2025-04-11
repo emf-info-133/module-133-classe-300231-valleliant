@@ -13,7 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class LoginController {
 
     private final RestTemplate restTemplate;
-    private final String serviceUrl = "http://service1:port/auth/login"; // URL du service backend
+    private final String serviceUrl = "http://service-rest1:8082/auth/login"; // URL du service backend
 
     @Autowired
     public LoginController(RestTemplate restTemplate) {
@@ -21,22 +21,22 @@ public class LoginController {
     }
 
     public static class LoginRequest {
-        private String email;
+        private String identifier;  // should match the backend's 'identifier'
         private String password;
-
-        // Getters et Setters
-        public String getEmail() {
-            return email;
+    
+        // Getters and Setters
+        public String getIdentifier() {
+            return identifier;
         }
-
-        public void setEmail(String email) {
-            this.email = email;
+    
+        public void setIdentifier(String identifier) {
+            this.identifier = identifier;
         }
-
+    
         public String getPassword() {
             return password;
         }
-
+    
         public void setPassword(String password) {
             this.password = password;
         }
@@ -61,7 +61,7 @@ public class LoginController {
     @Operation(summary = "Déconnecter un utilisateur", description = "Transmet la requête de déconnexion au service backend")
     public ResponseEntity<?> logout() {
         // URL du service backend pour la déconnexion
-        String serviceLogoutUrl = "http://service1-host:port/auth/logout";
+        String serviceLogoutUrl = "http://service-rest1:8082/auth/logout";
         ResponseEntity<String> response = restTemplate.exchange(
             serviceLogoutUrl,
             HttpMethod.POST,

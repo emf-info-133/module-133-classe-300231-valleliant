@@ -2,6 +2,7 @@
 /home/ceyha/module-133-classe-300231-valleliant-1/projet/serviceRest1/src/main/java/com/monprojet/service1/dto/TeamDTO.java
 /home/ceyha/module-133-classe-300231-valleliant-1/projet/serviceRest1/src/main/java/com/monprojet/service1/controllers/RegisterController.java
 /home/ceyha/module-133-classe-300231-valleliant-1/projet/serviceRest1/src/main/java/com/monprojet/service1/repositories/UserRepository.java
+/home/ceyha/module-133-classe-300231-valleliant-1/projet/serviceRest1/src/main/java/com/monprojet/service1/security/InMemorySessionService.java
 /home/ceyha/module-133-classe-300231-valleliant-1/projet/serviceRest1/src/main/java/com/monprojet/service1/models/TeamUser.java
 /home/ceyha/module-133-classe-300231-valleliant-1/projet/serviceRest1/src/main/java/com/monprojet/service1/dto/UserDTO.java
 /home/ceyha/module-133-classe-300231-valleliant-1/projet/serviceRest1/src/main/java/com/monprojet/service1/controllers/LoginController.java

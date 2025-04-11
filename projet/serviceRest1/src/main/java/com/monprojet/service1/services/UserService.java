@@ -3,9 +3,11 @@ package com.monprojet.service1.services;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import com.monprojet.service1.dto.UserDTO;
 import com.monprojet.service1.models.User;
 import com.monprojet.service1.repositories.UserRepository;
@@ -37,17 +39,12 @@ public class UserService {
                 .orElse(null);
     }
 
-    // Amélioré : Récupérer un utilisateur par nom et lever une exception s'il n'est
-    // pas trouvé
-    
-
+    // Récupérer un utilisateur par nom
     public UserDTO getUserByName(String name) {
         return userRepository.findByName(name)
                   .map(user -> new UserDTO(user.getId(), user.getName(), user.getEmail()))
                   .orElse(null);
     }
-    
-    
 
     // Créer un utilisateur avec mot de passe haché
     public UserDTO createUser(UserDTO userDTO, String rawPassword) {

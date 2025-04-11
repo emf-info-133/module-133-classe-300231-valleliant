@@ -1,6 +1,8 @@
 com/monprojet/apigateway/controller/LoginController.class
 com/monprojet/apigateway/dto/TeamDTO.class
+com/monprojet/apigateway/config/JwtUtils.class
 com/monprojet/apigateway/dto/MatchDTO.class
+com/monprojet/apigateway/config/JwtAuthFilter.class
 com/monprojet/apigateway/dto/TournamentWithAdminDTO.class
 com/monprojet/apigateway/ApiGatewayApplication.class
 com/monprojet/apigateway/controller/LoginController$LoginRequest.class
@@ -11,4 +13,5 @@ com/monprojet/apigateway/controller/RegisterController$RegisterRequest.class
 com/monprojet/apigateway/service/GatewayService.class
 com/monprojet/apigateway/config/GatewayConfig.class
 com/monprojet/apigateway/dto/TournamentDTO.class
+com/monprojet/apigateway/config/SecurityConfig.class
 com/monprojet/apigateway/dto/GameDTO.class

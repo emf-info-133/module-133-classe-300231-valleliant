@@ -1,4 +1,5 @@
 com/monprojet/service1/services/TeamService.class
+com/monprojet/service1/security/InMemorySessionService.class
 com/monprojet/service1/controllers/LoginController.class
 com/monprojet/service1/repositories/UserRepository.class
 com/monprojet/service1/models/User.class
