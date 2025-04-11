@@ -21,6 +21,9 @@ public class JwtAuthFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String token = extractToken(exchange);
 
+        // Log pour afficher le token reçu
+        System.out.println("Token reçu: " + token);
+
         if (token == null) {
             return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token JWT manquant"));
         }
@@ -31,6 +34,13 @@ public class JwtAuthFilter implements WebFilter {
 
         // Valider et extraire l'utilisateur du JWT
         String username = extractUsernameFromToken(token);
+
+        if (username == null) {
+            return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nom d'utilisateur introuvable dans le token"));
+        }
+
+        // Log pour afficher le nom d'utilisateur extrait
+        System.out.println("Nom d'utilisateur extrait: " + username);
 
         // Ajouter l'utilisateur authentifié dans le contexte de sécurité
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, null);
