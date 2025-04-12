@@ -19,9 +19,14 @@ public class JwtAuthFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        String path = exchange.getRequest().getPath().toString();
+
+        if (path.startsWith("/auth") || path.startsWith("/register")) {
+            return chain.filter(exchange);
+        }
+
         String token = extractToken(exchange);
 
-        // Log pour afficher le token reçu
         System.out.println("Token reçu: " + token);
 
         if (token == null) {
@@ -32,34 +37,34 @@ public class JwtAuthFilter implements WebFilter {
             return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token JWT invalide ou expiré"));
         }
 
-        // Valider et extraire l'utilisateur du JWT
         String username = extractUsernameFromToken(token);
 
         if (username == null) {
-            return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nom d'utilisateur introuvable dans le token"));
+            return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Nom d'utilisateur introuvable dans le token"));
         }
 
-        // Log pour afficher le nom d'utilisateur extrait
         System.out.println("Nom d'utilisateur extrait: " + username);
 
-        // Ajouter l'utilisateur authentifié dans le contexte de sécurité
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, null);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null,
+                null);
         return chain.filter(exchange)
-                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication)); // Authentifier l'utilisateur dans le contexte
+                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
     }
 
     private String extractToken(ServerWebExchange exchange) {
         // Vérifie si l'en-tête Authorization existe et contient un token de type Bearer
         String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7);  // Extraire le token après "Bearer "
+            return authHeader.substring(7); // Extraire le token après "Bearer "
         }
         return null;
     }
 
     private boolean isValidToken(String token) {
         try {
-            // Logique de validation du JWT (par exemple, utiliser la clé secrète pour valider)
+            // Logique de validation du JWT (par exemple, utiliser la clé secrète pour
+            // valider)
             return JwtUtils.validateToken(token, jwtSecret);
         } catch (Exception e) {
             return false;
