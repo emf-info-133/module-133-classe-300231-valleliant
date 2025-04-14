@@ -29,26 +29,27 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        AuthenticationManagerBuilder authManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
-
+        AuthenticationManagerBuilder authManagerBuilder = 
+            http.getSharedObject(AuthenticationManagerBuilder.class);
+        
         authManagerBuilder
-                .userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder());
-
+            .userDetailsService(userDetailsService)
+            .passwordEncoder(passwordEncoder());
+            
         return authManagerBuilder.build();
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Disable CSRF protection for testing
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/register/**").permitAll()
-                        .anyRequest().authenticated())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Stateless
-                                                                                                             // configuration
-                );
-
+            .csrf(csrf -> csrf.disable())  // Disable CSRF protection for testing
+            .authorizeHttpRequests(auth -> auth
+                .anyRequest().permitAll()  // Allow all requests without authentication
+            )
+            .sessionManagement(session -> 
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Stateless configuration
+            );
+    
         return http.build();
     }
 }

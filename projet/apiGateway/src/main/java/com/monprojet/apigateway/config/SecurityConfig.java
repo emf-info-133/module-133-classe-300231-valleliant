@@ -4,17 +4,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
-import org.springframework.web.reactive.config.WebFluxConfigurer;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 
 @Configuration
-@EnableWebSecurity
-public class SecurityConfig implements WebFluxConfigurer {
+@EnableWebFluxSecurity
+public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
 
@@ -31,7 +30,7 @@ public class SecurityConfig implements WebFluxConfigurer {
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:3000"); // ou plusieurs avec .setAllowedOrigins()
+        config.addAllowedOrigin("http://localhost:3000"); // Vous pouvez définir plusieurs origines
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
 
@@ -41,14 +40,14 @@ public class SecurityConfig implements WebFluxConfigurer {
     }
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
+    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+        return http
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/auth/**", "/register/**").permitAll()
                         .anyExchange().authenticated())
-                .addFilterBefore(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION);
-
-        return http.build();
+                .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION) // 👈 Ajout du filtre ici
+                .build();
     }
+
 }

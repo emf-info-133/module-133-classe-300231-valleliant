@@ -1,4 +1,3 @@
-// Nouvelle version de GatewayService utilisant WebClient
 package com.monprojet.apigateway.service;
 
 import com.monprojet.apigateway.dto.*;
@@ -15,6 +14,7 @@ public class GatewayService {
 
     private final WebClient webClient;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final Set<String> loggedInUsers = new HashSet<>();  // Liste des utilisateurs connectés
 
     @Value("${serviceRest1.base.url}")
     private String serviceRest1BaseUrl;
@@ -25,6 +25,21 @@ public class GatewayService {
     public GatewayService(WebClient.Builder webClientBuilder, BCryptPasswordEncoder passwordEncoder) {
         this.webClient = webClientBuilder.build();
         this.passwordEncoder = passwordEncoder;
+    }
+
+    // Vérifie si un utilisateur est déjà connecté
+    public boolean isUserLoggedIn(String username) {
+        return loggedInUsers.contains(username);
+    }
+
+    // Ajoute un utilisateur à la liste des utilisateurs connectés
+    public void userLoggedIn(String username) {
+        loggedInUsers.add(username);
+    }
+
+    // Retire un utilisateur de la liste des utilisateurs connectés
+    public void userLoggedOut(String username) {
+        loggedInUsers.remove(username);
     }
 
     public Mono<List<UserDTO>> getAllUsers() {
@@ -54,7 +69,8 @@ public class GatewayService {
                 .uri(serviceRest1BaseUrl + "/users")
                 .bodyValue(payload)
                 .retrieve()
-                .bodyToMono(UserDTO.class);
+                .bodyToMono(UserDTO.class)
+                .doOnSuccess(user -> userLoggedIn(user.getName()));  // Ajoute l'utilisateur connecté
     }
 
     public Mono<List<TeamDTO>> getAllTeams() {

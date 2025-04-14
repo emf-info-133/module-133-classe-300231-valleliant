@@ -14,8 +14,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import com.monprojet.service1.dto.UserDTO;
 import com.monprojet.service1.models.User;
 import com.monprojet.service1.repositories.UserRepository;
-import com.monprojet.service1.security.InMemorySessionService;
 import com.monprojet.service1.security.JwtTokenProvider;
+import com.monprojet.service1.security.InMemorySessionService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.HashMap;
@@ -60,7 +60,7 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
             System.out.println("Tentative de login pour : " + loginRequest.getIdentifier());
 
@@ -85,16 +85,19 @@ public class LoginController {
             // Création du DTO pour l'utilisateur
             UserDTO userDTO = new UserDTO(user.getId(), user.getName(), user.getEmail());
 
-            // Vérifie si une session existe déjà pour cet utilisateur (prévenir la
-            // connexion simultanée)
+            // Création du token JWT
             String token = jwtTokenProvider.generateToken(userDTO);
 
+            // Stocker le token dans le SecurityContext
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    authResult.getPrincipal(), token, authResult.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            // Enregistrer la session en mémoire (si nécessaire)
             if (sessionService.getSession(token) != null) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("Cet utilisateur est déjà connecté. Une seule session est autorisée.");
             }
-
-            // Enregistrer la session en mémoire
             sessionService.createSession(token, userDTO);
 
             // Création de la réponse

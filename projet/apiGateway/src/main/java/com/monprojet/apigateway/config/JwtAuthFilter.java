@@ -1,22 +1,23 @@
 package com.monprojet.apigateway.config;
 
-import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
 import reactor.core.publisher.Mono;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+@Order(-1)
 @Component
 public class JwtAuthFilter implements WebFilter {
 
@@ -27,61 +28,59 @@ public class JwtAuthFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String path = exchange.getRequest().getPath().toString();
 
+        // Si la requête est pour l'authentification ou l'enregistrement, ne pas passer par le filtre JWT
         if (path.startsWith("/auth") || path.startsWith("/register")) {
             return chain.filter(exchange);
         }
 
+        // Extraction du token JWT
         String token = extractToken(exchange);
-
-        System.out.println("Token reçu: " + token);
 
         if (token == null) {
             return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token JWT manquant"));
         }
 
+        // Vérification de la validité du token
         if (!isValidToken(token)) {
             return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token JWT invalide ou expiré"));
         }
 
+        // Extraction du nom d'utilisateur du token
         String username = extractUsernameFromToken(token);
 
         if (username == null) {
-            return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                    "Nom d'utilisateur introuvable dans le token"));
+            return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nom d'utilisateur introuvable dans le token"));
         }
 
-        System.out.println("Nom d'utilisateur extrait: " + username);
+        // Vérifie si l'utilisateur est connecté
+        if (!isUserLoggedIn(username)) {
+            return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non connecté"));
+        }
 
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null,
-                null);
+        // Création de l'authentification pour le contexte de sécurité
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                username,
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_USER")) // 👈 ajoute un rôle par défaut
+        );
+
         return chain.filter(exchange)
                 .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
     }
 
     private String extractToken(ServerWebExchange exchange) {
-        // Vérifie si l'en-tête Authorization existe et contient un token de type Bearer
         String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7); // Extraire le token après "Bearer "
+            return authHeader.substring(7); // Retire le "Bearer " du début du token
         }
         return null;
     }
 
     private boolean isValidToken(String token) {
         try {
-            // Utiliser la méthode getSigningKey de JwtUtils
-            Claims claims = Jwts.parser()
-                    .setSigningKey(JwtUtils.getSigningKey(jwtSecret)) // Appeler la méthode de JwtUtils
-                    .parseClaimsJws(token)
-                    .getBody();
-
-            // Vous pouvez vérifier l'expiration ici si vous le souhaitez
-            Date expirationDate = claims.getExpiration();
-            if (expirationDate.before(new Date())) {
-                return false;
-            }
-
-            return true;
+            Claims claims = JwtUtils.parseClaims(token, jwtSecret);
+            // Vérifie si le token n'est pas expiré
+            return claims != null && !JwtUtils.isTokenExpired(claims);
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
@@ -90,5 +89,11 @@ public class JwtAuthFilter implements WebFilter {
     private String extractUsernameFromToken(String token) {
         // Extraire le nom d'utilisateur (ou d'autres informations) du token JWT
         return JwtUtils.getUsernameFromToken(token, jwtSecret);
+    }
+
+    // Vérifie si l'utilisateur est connecté
+    private boolean isUserLoggedIn(String username) {
+        // Cette méthode pourrait être étendue pour vérifier les utilisateurs connectés dans une base de données
+        return true;  // Supposons que l'utilisateur est connecté
     }
 }
