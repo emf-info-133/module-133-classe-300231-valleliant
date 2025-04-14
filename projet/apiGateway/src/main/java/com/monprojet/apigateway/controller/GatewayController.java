@@ -47,9 +47,9 @@ public class GatewayController {
     @GetMapping("/users")
     @Operation(summary = "Obtenir tous les utilisateurs")
     public ResponseEntity<List<UserDTO>> getUsers(HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-
+        }
         List<UserDTO> users = gatewayService.getAllUsers();
         return users.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(users);
     }
@@ -57,9 +57,9 @@ public class GatewayController {
     @GetMapping("/users/{id}")
     @Operation(summary = "Obtenir un utilisateur par ID")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Integer id, HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-
+        }
         UserDTO user = gatewayService.getUserById(id);
         return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
     }
@@ -69,7 +69,7 @@ public class GatewayController {
     public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO, @RequestParam String rawPassword,
             HttpServletRequest request) {
         if (!isUserLoggedIn(request)) {
-            return ResponseEntity.status(401).build(); // Utilisateur non connecté
+            return ResponseEntity.status(401).build();
         }
 
         // Appel du service avec le UserDTO et le mot de passe brut
@@ -79,36 +79,33 @@ public class GatewayController {
     }
 
     @PutMapping("/users/{id}")
-    @Operation(summary = "Mettre à jour un utilisateur par ID (admin uniquement)")
+    @Operation(summary = "Mettre à jour un utilisateur par ID (utilisateur lui-même ou administrateur uniquement)")
     public ResponseEntity<Void> updateUser(@PathVariable Integer id, @RequestBody UserDTO userDTO,
             HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-        if (!isAdmin(request))
-            return ResponseEntity.status(403).build();
+        }
+
+        HttpSession session = request.getSession(false);
+        UserDTO currentUser = (UserDTO) session.getAttribute("user");
+
+        // Si l'utilisateur connecté n'est pas l'administrateur et n'est pas celui qu'il
+        // veut mettre à jour
+        if (!currentUser.getId().equals(id)) {
+            return ResponseEntity.status(403).build(); // Accès interdit
+        }
 
         boolean updated = gatewayService.updateUser(id, userDTO);
         return updated ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
-    }
-
-    @DeleteMapping("/users/{id}")
-    @Operation(summary = "Supprimer un utilisateur par ID (admin uniquement)")
-    public ResponseEntity<Void> deleteUser(@PathVariable Integer id, HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
-            return ResponseEntity.status(401).build();
-        if (!isAdmin(request))
-            return ResponseEntity.status(403).build();
-
-        boolean deleted = gatewayService.deleteUser(id);
-        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
     // ---------------- TEAMS ----------------
 
     @GetMapping("/teams")
     public ResponseEntity<List<TeamDTO>> getAllTeams(HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
+        }
 
         List<TeamDTO> teams = gatewayService.getAllTeams();
         return teams.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(teams);
@@ -116,31 +113,40 @@ public class GatewayController {
 
     @GetMapping("/teams/{id}")
     public ResponseEntity<TeamDTO> getTeamById(@PathVariable Integer id, HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-
+        }
         TeamDTO team = gatewayService.getTeamById(id);
         return team != null ? ResponseEntity.ok(team) : ResponseEntity.notFound().build();
     }
 
     @PostMapping("/teams")
     public ResponseEntity<TeamDTO> createTeam(@RequestBody TeamDTO teamDTO, HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-        if (!isAdmin(request))
-            return ResponseEntity.status(403).build();
+        }
 
         TeamDTO created = gatewayService.createTeam(teamDTO);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     @PutMapping("/teams/{id}")
+    @Operation(summary = "Mettre à jour une équipe par ID (utilisateur ayant créé l'équipe ou administrateur uniquement)")
     public ResponseEntity<Void> updateTeam(@PathVariable Integer id, @RequestBody TeamDTO teamDTO,
             HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-        if (!isAdmin(request))
-            return ResponseEntity.status(403).build();
+        }
+
+        HttpSession session = request.getSession(false);
+        UserDTO currentUser = (UserDTO) session.getAttribute("user");
+
+        // Si l'utilisateur connecté n'est pas l'administrateur et n'est pas celui qui a
+        // créé l'équipe
+        TeamDTO team = gatewayService.getTeamById(id);
+        if (team == null || (!isAdmin(request) || !team.getCaptain().equals(currentUser.getId()))) {
+            return ResponseEntity.status(403).build(); // Accès interdit
+        }
 
         boolean updated = gatewayService.updateTeam(id, teamDTO);
         return updated ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
@@ -148,10 +154,9 @@ public class GatewayController {
 
     @DeleteMapping("/teams/{id}")
     public ResponseEntity<Void> deleteTeam(@PathVariable Integer id, HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-        if (!isAdmin(request))
-            return ResponseEntity.status(403).build();
+        }
 
         boolean deleted = gatewayService.deleteTeam(id);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
@@ -161,29 +166,30 @@ public class GatewayController {
 
     @GetMapping("/tournaments")
     public ResponseEntity<List<TournamentDTO>> getAllTournaments(HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-
+        }
         List<TournamentDTO> tournaments = gatewayService.getAllTournaments();
         return tournaments.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(tournaments);
     }
 
     @GetMapping("/tournaments/{id}")
     public ResponseEntity<TournamentDTO> getTournamentById(@PathVariable Integer id, HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-
+        }
         TournamentDTO tournament = gatewayService.getTournamentById(id);
         return tournament != null ? ResponseEntity.ok(tournament) : ResponseEntity.notFound().build();
     }
 
     @PostMapping("/tournaments")
     public ResponseEntity<TournamentDTO> createTournament(@RequestBody TournamentDTO dto, HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-        if (!isAdmin(request))
+        }
+        if (!isAdmin(request)) {
             return ResponseEntity.status(403).build();
-
+        }
         TournamentDTO created = gatewayService.createTournament(dto);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
@@ -191,22 +197,24 @@ public class GatewayController {
     @PutMapping("/tournaments/{id}")
     public ResponseEntity<Void> updateTournament(@PathVariable Integer id, @RequestBody TournamentDTO dto,
             HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-        if (!isAdmin(request))
+        }
+        if (!isAdmin(request)) {
             return ResponseEntity.status(403).build();
-
+        }
         boolean updated = gatewayService.updateTournament(id, dto);
         return updated ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/tournaments/{id}")
     public ResponseEntity<Void> deleteTournament(@PathVariable Integer id, HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-        if (!isAdmin(request))
+        }
+        if (!isAdmin(request)) {
             return ResponseEntity.status(403).build();
-
+        }
         boolean deleted = gatewayService.deleteTournament(id);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
@@ -215,29 +223,30 @@ public class GatewayController {
 
     @GetMapping("/matches")
     public ResponseEntity<List<MatchDTO>> getAllMatches(HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-
+        }
         List<MatchDTO> matches = gatewayService.getAllMatches();
         return matches.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(matches);
     }
 
     @GetMapping("/matches/{id}")
     public ResponseEntity<MatchDTO> getMatchById(@PathVariable Integer id, HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-
+        }
         MatchDTO match = gatewayService.getMatchById(id);
         return match != null ? ResponseEntity.ok(match) : ResponseEntity.notFound().build();
     }
 
     @PostMapping("/matches")
     public ResponseEntity<MatchDTO> createMatch(@RequestBody MatchDTO dto, HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-        if (!isAdmin(request))
+        }
+        if (!isAdmin(request)) {
             return ResponseEntity.status(403).build();
-
+        }
         MatchDTO created = gatewayService.createMatch(dto);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
@@ -245,22 +254,24 @@ public class GatewayController {
     @PutMapping("/matches/{id}")
     public ResponseEntity<Void> updateMatch(@PathVariable Integer id, @RequestBody MatchDTO dto,
             HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-        if (!isAdmin(request))
+        }
+        if (!isAdmin(request)) {
             return ResponseEntity.status(403).build();
-
+        }
         boolean updated = gatewayService.updateMatch(id, dto);
         return updated ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/matches/{id}")
     public ResponseEntity<Void> deleteMatch(@PathVariable Integer id, HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-        if (!isAdmin(request))
+        }
+        if (!isAdmin(request)) {
             return ResponseEntity.status(403).build();
-
+        }
         boolean deleted = gatewayService.deleteMatch(id);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
@@ -269,18 +280,18 @@ public class GatewayController {
 
     @GetMapping("/games")
     public ResponseEntity<List<GameDTO>> getGames(HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-
+        }
         List<GameDTO> games = gatewayService.getAllGames();
         return games.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(games);
     }
 
     @GetMapping("/games/{id}")
     public ResponseEntity<GameDTO> getGameById(@PathVariable Integer id, HttpServletRequest request) {
-        if (!isUserLoggedIn(request))
+        if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
-
+        }
         GameDTO game = gatewayService.getGameById(id);
         return game != null ? ResponseEntity.ok(game) : ResponseEntity.notFound().build();
     }
