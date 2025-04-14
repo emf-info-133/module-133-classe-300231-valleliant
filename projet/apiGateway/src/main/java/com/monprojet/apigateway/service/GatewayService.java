@@ -2,10 +2,12 @@ package com.monprojet.apigateway.service;
 
 import com.monprojet.apigateway.dto.*;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.util.*;
 
@@ -24,117 +26,183 @@ public class GatewayService {
         this.restTemplate = restTemplate;
     }
 
-    // Vérifie si un utilisateur est déjà connecté
-    private final Set<String> loggedInUsers = new HashSet<>(); // Liste des utilisateurs connectés
+    // -------------------------- Méthodes Utilisateurs --------------------------
 
-    public boolean isUserLoggedIn(String username) {
-        return loggedInUsers.contains(username);
-    }
-
-    public void userLoggedIn(String username) {
-        loggedInUsers.add(username);
-    }
-
-    public void userLoggedOut(String username) {
-        loggedInUsers.remove(username);
-    }
-
-    // --- Méthodes pour ServiceRest1 (Utilisateurs et Équipes) ---
-
+    /**
+     * Récupérer tous les utilisateurs
+     */
     public List<UserDTO> getAllUsers() {
-        ResponseEntity<UserDTO[]> response = restTemplate.getForEntity(serviceRest1BaseUrl + "/users", UserDTO[].class);
-        return response.getBody() != null ? Arrays.asList(response.getBody()) : Collections.emptyList();
+        try {
+            ResponseEntity<UserDTO[]> response = restTemplate.getForEntity(serviceRest1BaseUrl + "/users", UserDTO[].class);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return Arrays.asList(response.getBody());
+            }
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            // Loggez les erreurs ici ou retournez une réponse d'erreur appropriée
+            throw new RuntimeException("Erreur lors de la récupération des utilisateurs", ex);
+        }
+        return Collections.emptyList(); // Retourne une liste vide en cas d'erreur
     }
 
+    /**
+     * Récupérer un utilisateur par son ID
+     */
     public UserDTO getUserById(Integer id) {
-        return restTemplate.getForObject(serviceRest1BaseUrl + "/users/" + id, UserDTO.class);
+        try {
+            return restTemplate.getForObject(serviceRest1BaseUrl + "/users/" + id, UserDTO.class);
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            throw new RuntimeException("Erreur lors de la récupération de l'utilisateur avec ID: " + id, ex);
+        }
     }
 
+    /**
+     * Créer un utilisateur
+     */
     public UserDTO createUser(UserDTO userDTO, String rawPassword) {
-        String hashedPassword = new BCryptPasswordEncoder().encode(rawPassword);
+        try {
+            String hashedPassword = new BCryptPasswordEncoder().encode(rawPassword);
+            Map<String, String> payload = new HashMap<>();
+            payload.put("name", userDTO.getName());
+            payload.put("email", userDTO.getEmail());
+            payload.put("password", hashedPassword);
 
-        Map<String, String> payload = new HashMap<>();
-        payload.put("name", userDTO.getName());
-        payload.put("email", userDTO.getEmail());
-        payload.put("password", hashedPassword);
-
-        return restTemplate.postForObject(serviceRest1BaseUrl + "/users", payload, UserDTO.class);
+            return restTemplate.postForObject(serviceRest1BaseUrl + "/users", payload, UserDTO.class);
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            throw new RuntimeException("Erreur lors de la création de l'utilisateur", ex);
+        }
     }
 
-    public List<TeamDTO> getAllTeams() {
-        ResponseEntity<TeamDTO[]> response = restTemplate.getForEntity(serviceRest1BaseUrl + "/teams", TeamDTO[].class);
-        return response.getBody() != null ? Arrays.asList(response.getBody()) : Collections.emptyList();
+    /**
+     * Mettre à jour un utilisateur
+     */
+    public boolean updateUser(Integer id, UserDTO userDTO) {
+        try {
+            Map<String, String> payload = new HashMap<>();
+            payload.put("name", userDTO.getName());
+            payload.put("email", userDTO.getEmail());
+
+            restTemplate.put(serviceRest1BaseUrl + "/users/" + id, payload);
+            return true;
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            throw new RuntimeException("Erreur lors de la mise à jour de l'utilisateur avec ID: " + id, ex);
+        }
     }
 
-    public TeamDTO getTeamById(Integer id) {
-        return restTemplate.getForObject(serviceRest1BaseUrl + "/teams/" + id, TeamDTO.class);
+    /**
+     * Supprimer un utilisateur
+     */
+    public boolean deleteUser(Integer id) {
+        try {
+            restTemplate.delete(serviceRest1BaseUrl + "/users/" + id);
+            return true;
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            throw new RuntimeException("Erreur lors de la suppression de l'utilisateur avec ID: " + id, ex);
+        }
     }
 
-    // --- Méthodes pour ServiceRest2 (Tournois, Jeux, Matches) ---
+    // -------------------------- Méthodes Tournois --------------------------
 
+    /**
+     * Récupérer tous les tournois
+     */
     public List<TournamentDTO> getAllTournaments() {
-        ResponseEntity<TournamentDTO[]> response = restTemplate.getForEntity(serviceRest2BaseUrl + "/tournaments",
-                TournamentDTO[].class);
-        return response.getBody() != null ? Arrays.asList(response.getBody()) : Collections.emptyList();
+        try {
+            ResponseEntity<TournamentDTO[]> response = restTemplate.getForEntity(serviceRest2BaseUrl + "/tournaments", TournamentDTO[].class);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return Arrays.asList(response.getBody());
+            }
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            // Loggez les erreurs ici ou retournez une réponse d'erreur appropriée
+            throw new RuntimeException("Erreur lors de la récupération des tournois", ex);
+        }
+        return Collections.emptyList(); // Retourne une liste vide en cas d'erreur
     }
 
-    public TournamentDTO getTournamentById(Integer id) {
-        return restTemplate.getForObject(serviceRest2BaseUrl + "/tournaments/" + id, TournamentDTO.class);
-    }
-
+    /**
+     * Créer un tournoi
+     */
     public TournamentDTO createTournament(TournamentDTO tournamentDTO) {
-        return restTemplate.postForObject(serviceRest2BaseUrl + "/tournaments", tournamentDTO, TournamentDTO.class);
+        try {
+            return restTemplate.postForObject(serviceRest2BaseUrl + "/tournaments", tournamentDTO, TournamentDTO.class);
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            throw new RuntimeException("Erreur lors de la création du tournoi", ex);
+        }
     }
 
-    public TournamentDTO updateTournament(Integer id, TournamentDTO tournamentDTO) {
-        restTemplate.put(serviceRest2BaseUrl + "/tournaments/" + id, tournamentDTO);
-        return tournamentDTO; // Retourne l'objet mis à jour
+    /**
+     * Mettre à jour un tournoi
+     */
+    public boolean updateTournament(Integer id, TournamentDTO tournamentDTO) {
+        try {
+            restTemplate.put(serviceRest2BaseUrl + "/tournaments/" + id, tournamentDTO);
+            return true;
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            throw new RuntimeException("Erreur lors de la mise à jour du tournoi avec ID: " + id, ex);
+        }
     }
 
-    public void deleteTournament(Integer id) {
-        restTemplate.delete(serviceRest2BaseUrl + "/tournaments/" + id);
+    /**
+     * Supprimer un tournoi
+     */
+    public boolean deleteTournament(Integer id) {
+        try {
+            restTemplate.delete(serviceRest2BaseUrl + "/tournaments/" + id);
+            return true;
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            throw new RuntimeException("Erreur lors de la suppression du tournoi avec ID: " + id, ex);
+        }
     }
 
-    public List<GameDTO> getAllGames() {
-        ResponseEntity<GameDTO[]> response = restTemplate.getForEntity(serviceRest2BaseUrl + "/games", GameDTO[].class);
-        return response.getBody() != null ? Arrays.asList(response.getBody()) : Collections.emptyList();
-    }
+    // -------------------------- Méthodes Matchs --------------------------
 
+    /**
+     * Récupérer tous les matchs
+     */
     public List<MatchDTO> getAllMatches() {
-        ResponseEntity<MatchDTO[]> response = restTemplate.getForEntity(serviceRest2BaseUrl + "/matches",
-                MatchDTO[].class);
-        return response.getBody() != null ? Arrays.asList(response.getBody()) : Collections.emptyList();
+        try {
+            ResponseEntity<MatchDTO[]> response = restTemplate.getForEntity(serviceRest2BaseUrl + "/matches", MatchDTO[].class);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return Arrays.asList(response.getBody());
+            }
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            // Loggez les erreurs ici ou retournez une réponse d'erreur appropriée
+            throw new RuntimeException("Erreur lors de la récupération des matchs", ex);
+        }
+        return Collections.emptyList(); // Retourne une liste vide en cas d'erreur
     }
 
-    public List<MatchDTO> getMatchesByTeam(Integer teamId) {
-        ResponseEntity<MatchDTO[]> response = restTemplate.getForEntity(serviceRest2BaseUrl + "/matches/team/" + teamId,
-                MatchDTO[].class);
-        return response.getBody() != null ? Arrays.asList(response.getBody()) : Collections.emptyList();
-    }
-
+    /**
+     * Créer un match
+     */
     public MatchDTO createMatch(MatchDTO matchDTO) {
-        return restTemplate.postForObject(serviceRest2BaseUrl + "/matches", matchDTO, MatchDTO.class);
+        try {
+            return restTemplate.postForObject(serviceRest2BaseUrl + "/matches", matchDTO, MatchDTO.class);
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            throw new RuntimeException("Erreur lors de la création du match", ex);
+        }
     }
 
-    public MatchDTO updateMatch(Integer id, MatchDTO matchDTO) {
-        restTemplate.put(serviceRest2BaseUrl + "/matches/" + id, matchDTO);
-        return matchDTO; // Retourne l'objet mis à jour
+    /**
+     * Mettre à jour un match
+     */
+    public boolean updateMatch(Integer id, MatchDTO matchDTO) {
+        try {
+            restTemplate.put(serviceRest2BaseUrl + "/matches/" + id, matchDTO);
+            return true;
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            throw new RuntimeException("Erreur lors de la mise à jour du match avec ID: " + id, ex);
+        }
     }
 
-    public void deleteMatch(Integer id) {
-        restTemplate.delete(serviceRest2BaseUrl + "/matches/" + id);
-    }
-
-    public TournamentWithAdminDTO getTournamentWithAdmin(Integer tournamentId) {
-        TournamentDTO tournament = getTournamentById(tournamentId);
-        UserDTO admin = getUserById(tournament.getAdminId());
-
-        return new TournamentWithAdminDTO(
-                tournament.getId(),
-                tournament.getName(),
-                tournament.getDate(),
-                tournament.getAdminId(),
-                admin != null ? admin.getName() : null,
-                admin != null ? admin.getEmail() : null);
+    /**
+     * Supprimer un match
+     */
+    public boolean deleteMatch(Integer id) {
+        try {
+            restTemplate.delete(serviceRest2BaseUrl + "/matches/" + id);
+            return true;
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            throw new RuntimeException("Erreur lors de la suppression du match avec ID: " + id, ex);
+        }
     }
 }
