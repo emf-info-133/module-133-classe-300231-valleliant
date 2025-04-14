@@ -14,7 +14,6 @@ com/monprojet/service1/config/SecurityConfig.class
 com/monprojet/service1/controllers/UserController.class
 com/monprojet/service1/security/CustomUserDetailsService.class
 com/monprojet/service1/models/TeamUser.class
-com/monprojet/service1/security/JwtTokenProvider.class
 com/monprojet/service1/repositories/TeamRepository.class
 com/monprojet/service1/dto/UserDTO.class
 com/monprojet/service1/models/Team.class

@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -42,12 +43,21 @@ public class UserService {
     // Récupérer un utilisateur par nom
     public UserDTO getUserByName(String name) {
         return userRepository.findByName(name)
-                  .map(user -> new UserDTO(user.getId(), user.getName(), user.getEmail()))
-                  .orElse(null);
+                .map(user -> new UserDTO(user.getId(), user.getName(), user.getEmail()))
+                .orElse(null);
     }
 
-    // Créer un utilisateur avec mot de passe haché
     public UserDTO createUser(UserDTO userDTO, String rawPassword) {
+        // Vérification si les champs sont bien renseignés
+        if (userDTO.getName() == null || userDTO.getEmail() == null || rawPassword == null) {
+            throw new IllegalArgumentException("Le nom, l'email et le mot de passe sont obligatoires.");
+        }
+
+        // Vérifier si l'email existe déjà dans la base de données
+        if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Un utilisateur avec cet email existe déjà.");
+        }
+
         // Hachage du mot de passe
         String hashedPassword = passwordEncoder.encode(rawPassword);
 
@@ -55,13 +65,18 @@ public class UserService {
         User user = new User();
         user.setName(userDTO.getName());
         user.setEmail(userDTO.getEmail());
-        user.setPassword(hashedPassword);  // Stocker le mot de passe haché
+        user.setPassword(hashedPassword); // Stocker le mot de passe haché
+        user.setAdmin(false); // Valeur par défaut pour isAdmin (non administrateur)
 
-        // Sauvegarder l'utilisateur dans la base de données
-        User savedUser = userRepository.save(user);
+        try {
+            // Sauvegarder l'utilisateur dans la base de données
+            User savedUser = userRepository.save(user);
 
-        // Retourner le DTO
-        return new UserDTO(savedUser.getId(), savedUser.getName(), savedUser.getEmail());
+            // Retourner le DTO avec les informations de l'utilisateur créé
+            return new UserDTO(savedUser.getId(), savedUser.getName(), savedUser.getEmail());
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("Erreur lors de la création de l'utilisateur : " + e.getMessage());
+        }
     }
 
     // Mettre à jour un utilisateur existant

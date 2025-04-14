@@ -18,38 +18,38 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
 
+    // Constructor to inject the CustomUserDetailsService
     public SecurityConfig(CustomUserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 
+    // BCryptPasswordEncoder bean
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // AuthenticationManager bean
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        AuthenticationManagerBuilder authManagerBuilder = 
-            http.getSharedObject(AuthenticationManagerBuilder.class);
-        
+        AuthenticationManagerBuilder authManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+
         authManagerBuilder
-            .userDetailsService(userDetailsService)
-            .passwordEncoder(passwordEncoder());
-            
+                .userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder());
+
         return authManagerBuilder.build();
     }
 
+    // La gestion de l'authentification est déplacée vers l'API Gateway.
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())  // Disable CSRF protection for testing
-            .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll()  // Allow all requests without authentication
-            )
-            .sessionManagement(session -> 
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Stateless configuration
-            );
-    
+                .csrf(csrf -> csrf.disable()) // Désactiver CSRF si nécessaire
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll() // Toute requête est autorisée sans authentification
+                );
+
         return http.build();
     }
 }

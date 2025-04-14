@@ -1,53 +1,72 @@
 package com.monprojet.service1.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
-import com.monprojet.service1.dto.UserDTO;
-import com.monprojet.service1.models.User;
-import com.monprojet.service1.repositories.UserRepository;
-import com.monprojet.service1.security.JwtTokenProvider;
-import com.monprojet.service1.security.InMemorySessionService;
-import io.swagger.v3.oas.annotations.tags.Tag;
-
-import java.util.HashMap;
-import java.util.Map;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/auth")
-@Tag(name = "Authentification", description = "Endpoints de login et logout")
 public class LoginController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private InMemorySessionService sessionService;
-
-    public static class LoginRequest {
-        private String identifier;
-        private String password;
-
-        public String getIdentifier() {
-            return identifier;
+    @PostMapping("/login")
+    public String login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+        // Vérifie si l'utilisateur est déjà connecté en vérifiant la session
+        HttpSession session = request.getSession(false); // false signifie ne pas créer une nouvelle session si elle n'existe pas déjà
+        if (session != null && session.getAttribute("username") != null) {
+            // Si une session existe déjà, renvoie un message indiquant que l'utilisateur est déjà connecté
+            return "Utilisateur déjà connecté";
         }
 
-        public void setIdentifier(String identifier) {
-            this.identifier = identifier;
+        try {
+            // Tentative d'authentification avec les informations fournies dans le corps de la requête
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
+            Authentication authResult = authenticationManager.authenticate(authToken);
+
+            // Enregistrer l'authentification dans le contexte de sécurité
+            SecurityContextHolder.getContext().setAuthentication(authResult);
+
+            // Créer une session pour l'utilisateur authentifié
+            HttpSession newSession = request.getSession(true);  // true crée une nouvelle session si nécessaire
+            newSession.setAttribute("username", loginRequest.getUsername());  // Stocke l'utilisateur dans la session
+
+            return "Login réussi";
+        } catch (Exception ex) {
+            return "Erreur d'authentification : " + ex.getMessage();
+        }
+    }
+
+    @PostMapping("/logout")
+    public String logout(HttpServletRequest request, HttpServletResponse response) {
+        // Invalidating the session
+        HttpSession session = request.getSession(false); // false signifie que cela ne crée pas une nouvelle session
+        if (session != null) {
+            session.invalidate();  // Invalider la session existante
+        }
+
+        return "Déconnexion réussie";
+    }
+
+    // Classe LoginRequest rendue statique
+    public static class LoginRequest {
+        private String username;
+        private String password;
+
+        // Getters and setters
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
         }
 
         public String getPassword() {
@@ -58,71 +77,4 @@ public class LoginController {
             this.password = password;
         }
     }
-
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        try {
-            System.out.println("Tentative de login pour : " + loginRequest.getIdentifier());
-
-            // Création du token d'authentification
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    loginRequest.getIdentifier(), loginRequest.getPassword());
-
-            // Tentative d'authentification
-            Authentication authResult = authenticationManager.authenticate(authToken);
-            SecurityContextHolder.getContext().setAuthentication(authResult);
-
-            // Identification de l'utilisateur à partir du principal
-            String principalIdentifier = ((org.springframework.security.core.userdetails.User) authResult
-                    .getPrincipal()).getUsername();
-
-            System.out.println("Principal authentifié : " + principalIdentifier);
-
-            // Recherche de l'utilisateur par email ou nom
-            User user = userRepository.findByEmailOrName(principalIdentifier, principalIdentifier)
-                    .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé en base"));
-
-            // Création du DTO pour l'utilisateur
-            UserDTO userDTO = new UserDTO(user.getId(), user.getName(), user.getEmail());
-
-            // Création du token JWT
-            String token = jwtTokenProvider.generateToken(userDTO);
-
-            // Stocker le token dans le SecurityContext
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    authResult.getPrincipal(), token, authResult.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            // Enregistrer la session en mémoire (si nécessaire)
-            if (sessionService.getSession(token) != null) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body("Cet utilisateur est déjà connecté. Une seule session est autorisée.");
-            }
-            sessionService.createSession(token, userDTO);
-
-            // Création de la réponse
-            Map<String, Object> response = new HashMap<>();
-            response.put("token", token);
-            response.put("user", userDTO);
-
-            return ResponseEntity.ok(response);
-        } catch (BadCredentialsException ex) {
-            System.err.println("Erreur d'authentification : " + ex.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Login échoué : Informations d'identification incorrectes.");
-        } catch (Exception e) {
-            System.err.println("Erreur serveur : " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erreur interne : " + e.getMessage());
-        }
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestParam String token) {
-        sessionService.removeSession(token); // Supprimer la session en mémoire
-        SecurityContextHolder.clearContext();
-        return ResponseEntity.ok("Déconnexion réussie");
-    }
-
 }

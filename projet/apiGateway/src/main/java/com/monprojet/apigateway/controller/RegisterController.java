@@ -3,8 +3,7 @@ package com.monprojet.apigateway.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestTemplate;
 import com.monprojet.apigateway.dto.UserDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,12 +13,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Inscription", description = "Endpoint pour créer un compte utilisateur")
 public class RegisterController {
 
-    private final WebClient webClient;
+    private final RestTemplate restTemplate;
     private final String serviceUrl = "http://service-rest1:8080/register";
 
     @Autowired
-    public RegisterController(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.build();
+    public RegisterController(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
     public static class RegisterRequest {
@@ -38,17 +37,25 @@ public class RegisterController {
 
     @PostMapping
     @Operation(summary = "Créer un compte utilisateur", description = "Inscrit un nouvel utilisateur avec hash du mot de passe")
-    public Mono<ResponseEntity<UserDTO>> register(@RequestBody RegisterRequest registerRequest) {
-        // Construire le payload de la requête
-        return webClient.post()
-                .uri(serviceUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(registerRequest)
-                .retrieve()
-                .toEntity(UserDTO.class)
-                .onErrorResume(error -> Mono.just(
-                    ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                            .body(null)
-                ));
+    public ResponseEntity<UserDTO> register(@RequestBody RegisterRequest registerRequest) {
+        // Construire le corps de la requête avec RestTemplate
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<RegisterRequest> requestEntity = new HttpEntity<>(registerRequest, headers);
+
+        try {
+            // Effectuer l'appel HTTP POST vers le service
+            ResponseEntity<UserDTO> response = restTemplate.exchange(
+                    serviceUrl,
+                    HttpMethod.POST,
+                    requestEntity,
+                    UserDTO.class
+            );
+
+            return response; // Retourne la réponse obtenue du service REST1
+        } catch (Exception e) {
+            // Si une erreur survient, on retourne un BAD_GATEWAY
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(null);
+        }
     }
 }

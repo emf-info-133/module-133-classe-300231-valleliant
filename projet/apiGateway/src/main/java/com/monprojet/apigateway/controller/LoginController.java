@@ -1,36 +1,29 @@
 package com.monprojet.apigateway.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.client.RestTemplate;
 
 @RestController
 @RequestMapping("/auth")
-@Tag(name = "Authentification", description = "Endpoints pour login et logout")
 public class LoginController {
 
-    private final WebClient webClient;
-    private final String serviceBaseUrl = "http://service-rest1:8080/auth";
-
-    @Autowired
-    public LoginController(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.build();
-    }
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final String SERVICE_BASE_URL = "http://service-rest1:8080/auth";
 
     public static class LoginRequest {
-        private String identifier;
+        private String username;
         private String password;
 
-        public String getIdentifier() {
-            return identifier;
+        // Getters and setters
+        public String getUsername() {
+            return username;
         }
 
-        public void setIdentifier(String identifier) {
-            this.identifier = identifier;
+        public void setUsername(String username) {
+            this.username = username;
         }
 
         public String getPassword() {
@@ -43,30 +36,42 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Authentifier un utilisateur", description = "Transmet les identifiants au service backend pour authentification")
-    public Mono<ResponseEntity<String>> login(@RequestBody LoginRequest loginRequest) {
-        return webClient.post()
-                .uri(serviceBaseUrl + "/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(loginRequest)
-                .retrieve()
-                .toEntity(String.class)
-                .onErrorResume(error -> Mono.just(
-                        ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                                .body("Erreur d'authentification : " + error.getMessage())
-                ));
+    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+        // Check if the user is already logged in
+        HttpSession session = request.getSession(false);
+        if (session != null && session.getAttribute("user") != null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Utilisateur déjà connecté avec une session active");
+        }
+
+        // Envoyer la requête au microservice d'authentification
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                SERVICE_BASE_URL + "/login", loginRequest, String.class);
+
+        if (response.getStatusCode().is2xxSuccessful()) {
+            // Crée la session si elle n'existe pas et associe l'utilisateur à la session
+            session = request.getSession(true);
+            session.setAttribute("user", loginRequest.getUsername()); // Sauvegarde l'info utilisateur
+            return ResponseEntity.ok("Connexion réussie !");
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Échec de la connexion : " + response.getBody());
+        }
     }
 
     @PostMapping("/logout")
-    @Operation(summary = "Déconnecter un utilisateur", description = "Transmet la requête de déconnexion au service backend")
-    public Mono<ResponseEntity<String>> logout() {
-        return webClient.post()
-                .uri(serviceBaseUrl + "/logout")
-                .retrieve()
-                .toEntity(String.class)
-                .onErrorResume(error -> Mono.just(
-                        ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                                .body("Erreur de déconnexion : " + error.getMessage())
-                ));
+    public ResponseEntity<String> logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Utilisateur non connecté, impossible de se déconnecter");
+        }
+
+        // Appel au service de logout distant (facultatif)
+        restTemplate.postForEntity(SERVICE_BASE_URL + "/logout", null, String.class);
+
+        // Invalidation de la session
+        session.invalidate();
+        return ResponseEntity.ok("Déconnexion réussie");
     }
 }
