@@ -1,10 +1,16 @@
 package com.monprojet.apigateway.config;
 
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import reactor.core.publisher.Mono;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -63,10 +69,20 @@ public class JwtAuthFilter implements WebFilter {
 
     private boolean isValidToken(String token) {
         try {
-            // Logique de validation du JWT (par exemple, utiliser la clé secrète pour
-            // valider)
-            return JwtUtils.validateToken(token, jwtSecret);
-        } catch (Exception e) {
+            // Utiliser la méthode getSigningKey de JwtUtils
+            Claims claims = Jwts.parser()
+                    .setSigningKey(JwtUtils.getSigningKey(jwtSecret)) // Appeler la méthode de JwtUtils
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            // Vous pouvez vérifier l'expiration ici si vous le souhaitez
+            Date expirationDate = claims.getExpiration();
+            if (expirationDate.before(new Date())) {
+                return false;
+            }
+
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }

@@ -1,61 +1,72 @@
 package com.monprojet.apigateway.config;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
+
+import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 public class JwtUtils {
 
-    // Méthode pour valider le token JWT
+    public static SecretKey getSigningKey(String secret) {
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+    
+        // Complète la clé jusqu’à 64 octets si elle est trop courte pour HS512
+        if (keyBytes.length < 64) {
+            String paddedSecret = String.format("%-64s", secret).replace(' ', '0');
+            keyBytes = paddedSecret.getBytes(StandardCharsets.UTF_8);
+        }
+    
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+    
+
     public static boolean validateToken(String token, String secret) {
         try {
-            Jwts.parser()
-                .setSigningKey(secret.getBytes(StandardCharsets.UTF_8))
-                .parseClaimsJws(token); // Si aucune exception n'est levée, le token est valide
-            return true;
-        } catch (ExpiredJwtException e) {
-            // Le token est expiré
-            return false;
-        } catch (MalformedJwtException e) {
-            // Le token est mal formé
-            return false;
-        } catch (UnsupportedJwtException e) {
-            // Le token n'est pas supporté
-            return false;
+            Claims claims = Jwts.parser()
+                .setSigningKey(getSigningKey(secret)) // Appel à la méthode de génération de clé
+                .parseClaimsJws(token)
+                .getBody();
+    
+            // Vérification de l'expiration
+            if (claims.getExpiration().before(new Date())) {
+                return false; // Token expiré
+            }
+    
+            return true; // Token valide
         } catch (JwtException | IllegalArgumentException e) {
-            // Autres erreurs, le token est invalide
-            return false;
+            return false; // Token invalide ou malformé
         }
     }
+    
+    
 
-    // Méthode pour extraire le nom d'utilisateur (ou autre information) du JWT
     public static String getUsernameFromToken(String token, String secret) {
         try {
             Claims claims = Jwts.parser()
-                    .setSigningKey(secret.getBytes(StandardCharsets.UTF_8))
-                    .parseClaimsJws(token)
-                    .getBody();  // Extraire les informations du corps du token
-            return claims.getSubject(); // Retourne le nom d'utilisateur (ou subject)
+                .setSigningKey(getSigningKey(secret)) // ✅ cohérent aussi ici
+                .parseClaimsJws(token)
+                .getBody();
+
+            return claims.getSubject();
         } catch (JwtException | IllegalArgumentException e) {
-            return null; // Si le token est invalide, retourne null
+            System.out.println("Erreur extraction subject : " + e.getMessage());
+            return null;
         }
     }
 
-    // Méthode pour vérifier si le token est expiré
     public static boolean isTokenExpired(String token, String secret) {
         try {
             Claims claims = Jwts.parser()
-                    .setSigningKey(secret.getBytes(StandardCharsets.UTF_8))
-                    .parseClaimsJws(token)
-                    .getBody();
-            return claims.getExpiration().before(new Date()); // Vérifie si la date d'expiration est dans le passé
+                .setSigningKey(getSigningKey(secret))
+                .parseClaimsJws(token)
+                .getBody();
+
+            return claims.getExpiration().before(new Date());
         } catch (JwtException | IllegalArgumentException e) {
-            return true; // Si le token est invalide ou autre erreur, considérer comme expiré
+            // Token is invalid or malformed, treat as expired
+            return true;
         }
     }
 }

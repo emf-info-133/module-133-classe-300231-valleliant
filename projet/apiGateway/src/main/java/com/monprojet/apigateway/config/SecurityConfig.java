@@ -28,27 +28,26 @@ public class SecurityConfig implements WebFluxConfigurer {
     }
 
     @Bean
-public CorsWebFilter corsWebFilter() {
-    CorsConfiguration config = new CorsConfiguration();
-    config.setAllowCredentials(true);
-    config.addAllowedOrigin("http://localhost:300"); // ou plusieurs avec .setAllowedOrigins()
-    config.addAllowedHeader("*");
-    config.addAllowedMethod("*");
+    public CorsWebFilter corsWebFilter() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("http://localhost:3000"); // ou plusieurs avec .setAllowedOrigins()
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
 
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", config);
-    return new CorsWebFilter(source);
-}
-
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return new CorsWebFilter(source);
+    }
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .authorizeExchange(exchanges -> exchanges
-                .anyExchange().permitAll() // Allow all requests for testing
-            )
-            .addFilterBefore(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION);
+                .csrf(csrf -> csrf.disable())
+                .authorizeExchange(exchanges -> exchanges
+                        .pathMatchers("/auth/**", "/register/**").permitAll()
+                        .anyExchange().authenticated())
+                .addFilterBefore(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION);
 
         return http.build();
     }
