@@ -32,14 +32,34 @@ public class GatewayController {
 
     private boolean isAdmin(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
-        if (session == null)
+        if (session == null) {
+            System.out.println("Pas de session active.");
             return false;
+        }
 
         Object userObj = session.getAttribute("user");
-        if (userObj instanceof UserDTO user) {
-            return "admin@admin.com".equalsIgnoreCase(user.getEmail());
+        if (userObj == null) {
+            System.out.println("Aucun utilisateur en session.");
+            return false;
         }
-        return false;
+
+        if (!(userObj instanceof UserDTO)) {
+            System.out.println("L'objet 'user' en session n'est pas un UserDTO.");
+            return false;
+        }
+
+        UserDTO user = (UserDTO) userObj;
+        String email = user.getEmail();
+        System.out.println("Utilisateur connecté : " + email); // Log pour vérifier l'email stocké dans la session
+
+        // Log supplémentaire pour inspecter l'email
+        if (email == null) {
+            System.out.println("L'email de l'utilisateur est null.");
+        } else {
+            System.out.println("Email de l'utilisateur : " + email);
+        }
+
+        return email != null && email.equalsIgnoreCase("admin@admin.com");
     }
 
     // --- USERS ---

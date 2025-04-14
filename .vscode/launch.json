@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "ApiGatewayApplication",
+            "request": "launch",
+            "mainClass": "com.monprojet.apigateway.ApiGatewayApplication",
+            "projectName": "gateway"
+        },
+        {
+            "type": "java",
             "name": "Service1Application",
             "request": "launch",
             "mainClass": "com.monprojet.service1.Service1Application",

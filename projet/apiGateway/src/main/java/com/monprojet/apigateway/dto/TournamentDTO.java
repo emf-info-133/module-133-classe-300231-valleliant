@@ -5,14 +5,16 @@ public class TournamentDTO {
     private String name;
     private String date;
     private Integer adminId;  // Référence à l'administrateur, obtenu depuis serviceRest2
+    private Integer gameId; 
 
     public TournamentDTO() { }
 
-    public TournamentDTO(Integer id, String name, String date, Integer adminId) {
+    public TournamentDTO(Integer id, String name, String date, Integer adminId, Integer gameId) {
         this.id = id;
         this.name = name;
         this.date = date;
         this.adminId = adminId;
+        this.gameId = gameId;
     }
 
     // Getters et Setters
@@ -27,4 +29,6 @@ public class TournamentDTO {
 
     public Integer getAdminId() { return adminId; }
     public void setAdminId(Integer adminId) { this.adminId = adminId; }
+    public Integer getgameId() { return gameId; }
+    public void setgameId(Integer gameId) { this.gameId = gameId; }
 }
