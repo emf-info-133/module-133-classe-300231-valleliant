@@ -113,10 +113,23 @@ public class GatewayService {
 
     public TeamDTO createTeam(TeamDTO teamDTO) {
         try {
+            // Appel au microservice pour créer l'équipe
             return restTemplate.postForObject(serviceRest1BaseUrl + "/teams", teamDTO, TeamDTO.class);
         } catch (HttpClientErrorException | HttpServerErrorException ex) {
-            throw new RuntimeException("Erreur lors de la création de l'équipe", ex);
+            // Log l'erreur HTTP pour diagnostiquer la cause
+            logError(ex);
+            throw new RuntimeException("Erreur lors de la création de l'équipe, erreur HTTP: " + ex.getStatusCode(),
+                    ex);
+        } catch (Exception ex) {
+            // Gestion d'autres types d'erreurs comme des erreurs réseau
+            logError(ex);
+            throw new RuntimeException("Erreur inattendue lors de la création de l'équipe", ex);
         }
+    }
+
+    private void logError(Exception ex) {
+        // Log pour mieux comprendre l'erreur
+        System.err.println("Erreur: " + ex.getMessage());
     }
 
     public boolean updateTeam(Integer id, TeamDTO teamDTO) {

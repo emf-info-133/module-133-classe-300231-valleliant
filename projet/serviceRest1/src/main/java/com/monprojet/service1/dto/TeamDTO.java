@@ -3,15 +3,15 @@ package com.monprojet.service1.dto;
 public class TeamDTO {
     private Integer id;
     private String name;
-    private UserDTO captain;       // Le capitaine de l'équipe
-    private TournamentDTO tournament; // Le tournoi auquel l'équipe participe
+    private Integer captain;        // Le capitaine de l'équipe
+    private Integer tournament;     // Le tournoi auquel l'équipe est associée
 
     // Constructeur vide
     public TeamDTO() {
     }
 
     // Constructeur complet
-    public TeamDTO(Integer id, String name, UserDTO captain, TournamentDTO tournament) {
+    public TeamDTO(Integer id, String name, Integer captain, Integer tournament) {
         this.id = id;
         this.name = name;
         this.captain = captain;
@@ -22,32 +22,25 @@ public class TeamDTO {
     public Integer getId() {
         return id;
     }
-
     public void setId(Integer id) {
         this.id = id;
     }
-
     public String getName() {
         return name;
     }
-
     public void setName(String name) {
         this.name = name;
     }
-
-    public UserDTO getCaptain() {
+    public Integer getCaptain() {
         return captain;
     }
-
-    public void setCaptain(UserDTO captain) {
+    public void setCaptain(Integer captain) {
         this.captain = captain;
     }
-
-    public TournamentDTO getTournament() {
+    public Integer getTournament() {
         return tournament;
     }
-
-    public void setTournament(TournamentDTO tournament) {
+    public void setTournament(Integer tournament) {
         this.tournament = tournament;
     }
 }

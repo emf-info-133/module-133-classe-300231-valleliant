@@ -141,13 +141,33 @@ public class GatewayController {
     }
 
     @PostMapping("/teams")
-    public ResponseEntity<TeamDTO> createTeam(@RequestBody TeamDTO teamDTO, HttpServletRequest request) {
-        if (!isUserLoggedIn(request)) {
-            return ResponseEntity.status(401).build();
+    public ResponseEntity<TeamDTO> createTeam(@RequestBody TeamDTO teamDTO) {
+        // Validation des données de l'équipe
+        if (teamDTO.getName() == null || teamDTO.getName().isEmpty()) {
+            // Crée un TeamDTO vide pour garder la structure
+            TeamDTO errorResponse = new TeamDTO();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
 
-        TeamDTO created = gatewayService.createTeam(teamDTO);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+        if (teamDTO.getTournament() == null) {
+            // Crée un TeamDTO vide pour garder la structure
+            TeamDTO errorResponse = new TeamDTO();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+
+        // Vérification de l'ID du capitaine
+        Integer captainId = teamDTO.getCaptain();
+        if (captainId == null) {
+            // Crée un TeamDTO vide pour garder la structure
+            TeamDTO errorResponse = new TeamDTO();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+
+        // Création de l'équipe via le service Gateway
+        TeamDTO createdTeam = gatewayService.createTeam(teamDTO);
+
+        // Retourner l'équipe créée avec un statut 201 (Créée)
+        return new ResponseEntity<>(createdTeam, HttpStatus.CREATED);
     }
 
     @PutMapping("/teams/{id}")
