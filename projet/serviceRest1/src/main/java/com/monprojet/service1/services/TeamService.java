@@ -6,14 +6,12 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.monprojet.service1.dto.TeamDTO;
+import com.monprojet.service1.dto.TournamentDTO;
 import com.monprojet.service1.dto.UserDTO;
 import com.monprojet.service1.models.Team;
 import com.monprojet.service1.models.User;
 import com.monprojet.service1.repositories.TeamRepository;
 import com.monprojet.service1.repositories.UserRepository;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 
 @Service
 public class TeamService {
@@ -53,28 +51,35 @@ public class TeamService {
         return teams.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    public TeamDTO createTeam(String name, Integer tournamentId, HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            throw new RuntimeException("Session inactive");
+    public TeamDTO createTeam(String name, Integer captainId, Integer tournamentId) {
+        // Récupérer le capitaine à partir de l'ID
+        Optional<User> captainOpt = userRepository.findById(captainId);
+        if (!captainOpt.isPresent()) {
+            // Gérer le cas où le capitaine n'est pas trouvé
+            return null;
         }
+        User captain = captainOpt.get();
 
-        Object userObj = session.getAttribute("user");
-        if (!(userObj instanceof UserDTO user)) {
-            throw new RuntimeException("Utilisateur non connecté ou invalide");
+        // Récupérer le tournoi à partir de l'ID
+        Optional<TournamentDTO> tournamentOpt = tournamentRepository.findById(tournamentId); // Tu peux aussi utiliser
+                                                                                             // un service pour
+                                                                                             // récupérer le tournoi
+        if (!tournamentOpt.isPresent()) {
+            // Gérer le cas où le tournoi n'est pas trouvé
+            return null;
         }
+        TournamentDTO tournament = tournamentOpt.get();
 
-        Optional<User> captainOpt = userRepository.findById(user.getId());
-        if (captainOpt.isEmpty()) {
-            throw new RuntimeException("Le capitaine n'existe pas dans la base");
-        }
-
+        // Créer une nouvelle équipe avec le tournoi et le capitaine associés
         Team team = new Team();
         team.setName(name);
-        team.setCaptain(captainOpt.get());
-        team.setTournamentId(tournamentId);
+        team.setCaptain(captain);
+        team.setTournamentId(tournamentId); // Associe l'ID du tournoi à l'équipe
 
+        // Sauvegarder l'équipe dans la base de données
         Team savedTeam = teamRepository.save(team);
+
+        // Convertir l'entité Team en DTO et renvoyer la réponse
         return convertToDTO(savedTeam);
     }
 
@@ -110,6 +115,11 @@ public class TeamService {
     private TeamDTO convertToDTO(Team team) {
         User captain = team.getCaptain();
         UserDTO captainDTO = new UserDTO(captain.getId(), captain.getName(), captain.getEmail());
-        return new TeamDTO(team.getId(), team.getName(), captainDTO);
+
+        // Récupérer le tournoi associé à l'équipe
+        TournamentDTO tournamentDTO = new TournamentDTO(team.getTournamentId(), "Nom du tournoi", "Jeu du tournoi");
+
+        return new TeamDTO(team.getId(), team.getName(), captainDTO, tournamentDTO);
     }
+
 }

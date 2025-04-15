@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.Map;
 
 // ... imports inchangés ...
 
@@ -142,16 +141,13 @@ public class GatewayController {
     }
 
     @PostMapping("/teams")
-    public ResponseEntity<TeamDTO> createTeam(@RequestBody Map<String, String> payload, HttpServletRequest request) {
+    public ResponseEntity<TeamDTO> createTeam(@RequestBody TeamDTO teamDTO, HttpServletRequest request) {
         if (!isUserLoggedIn(request)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(401).build();
         }
 
-        String name = payload.get("name");
-        Integer tournamentId = Integer.parseInt(payload.get("tournamentId"));
-
-        TeamDTO team = gatewayService.createTeam(name, tournamentId);
-        return new ResponseEntity<>(team, HttpStatus.CREATED);
+        TeamDTO created = gatewayService.createTeam(teamDTO);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     @PutMapping("/teams/{id}")

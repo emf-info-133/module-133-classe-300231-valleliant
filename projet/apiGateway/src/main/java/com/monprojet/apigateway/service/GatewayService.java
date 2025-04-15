@@ -94,7 +94,7 @@ public class GatewayService {
 
     public List<TeamDTO> getAllTeams() {
         try {
-            ResponseEntity<TeamDTO[]> response = restTemplate.getForEntity(serviceRest2BaseUrl + "/teams",
+            ResponseEntity<TeamDTO[]> response = restTemplate.getForEntity(serviceRest1BaseUrl + "/teams",
                     TeamDTO[].class);
             return response.getStatusCode().is2xxSuccessful() ? Arrays.asList(response.getBody())
                     : Collections.emptyList();
@@ -111,15 +111,9 @@ public class GatewayService {
         }
     }
 
-    public TeamDTO createTeam(String name, Integer tournamentId) {
+    public TeamDTO createTeam(TeamDTO teamDTO) {
         try {
-            Map<String, Object> payload = new HashMap<>();
-            payload.put("name", name);
-            payload.put("tournamentId", tournamentId);
-
-            // Appel vers le controller de serviceRest1 (où tu récupères le user connecté
-            // via la session)
-            return restTemplate.postForObject(serviceRest1BaseUrl + "/teams", payload, TeamDTO.class);
+            return restTemplate.postForObject(serviceRest1BaseUrl + "/teams", teamDTO, TeamDTO.class);
         } catch (HttpClientErrorException | HttpServerErrorException ex) {
             throw new RuntimeException("Erreur lors de la création de l'équipe", ex);
         }
