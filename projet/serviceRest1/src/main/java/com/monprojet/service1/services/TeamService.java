@@ -12,59 +12,72 @@ import com.monprojet.service1.models.User;
 import com.monprojet.service1.repositories.TeamRepository;
 import com.monprojet.service1.repositories.UserRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
 @Service
 public class TeamService {
 
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
-    
+
     @Autowired
     public TeamService(TeamRepository teamRepository, UserRepository userRepository) {
         this.teamRepository = teamRepository;
         this.userRepository = userRepository;
     }
-    
+
     // Récupérer toutes les équipes
     public List<TeamDTO> getAllTeams() {
         List<Team> teams = teamRepository.findAll();
         return teams.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
-    
+
     // Récupérer une équipe par son ID
     public TeamDTO getTeamById(Integer id) {
         Optional<Team> teamOpt = teamRepository.findById(id);
         return teamOpt.map(this::convertToDTO).orElse(null);
     }
-    
+
     // Récupérer toutes les équipes par l'ID du capitaine
     public List<TeamDTO> getTeamsByCaptain(Integer captainId) {
         // On suppose que le repository possède une méthode findByCaptainId
         List<Team> teams = teamRepository.findByCaptainId(captainId);
         return teams.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
-    
+
     // Récupérer toutes les équipes par ID de tournoi (si nécessaire)
     public List<TeamDTO> getTeamsByTournament(Integer tournamentId) {
         // On suppose que le repository possède une méthode findByTournamentId
         List<Team> teams = teamRepository.findByTournamentId(tournamentId);
         return teams.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
-    
-    // Créer une nouvelle équipe
-    public TeamDTO createTeam(String name, Integer captainId, Integer tournamentId) {
-        Optional<User> captainOpt = userRepository.findById(captainId);
-        if (!captainOpt.isPresent()) {
-            return null; // Ou lancer une exception si le capitaine n'existe pas
+
+    public TeamDTO createTeam(String name, Integer tournamentId, HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            throw new RuntimeException("Session inactive");
         }
+
+        Object userObj = session.getAttribute("user");
+        if (!(userObj instanceof UserDTO user)) {
+            throw new RuntimeException("Utilisateur non connecté ou invalide");
+        }
+
+        Optional<User> captainOpt = userRepository.findById(user.getId());
+        if (captainOpt.isEmpty()) {
+            throw new RuntimeException("Le capitaine n'existe pas dans la base");
+        }
+
         Team team = new Team();
         team.setName(name);
         team.setCaptain(captainOpt.get());
         team.setTournamentId(tournamentId);
-        
+
         Team savedTeam = teamRepository.save(team);
         return convertToDTO(savedTeam);
     }
-    
+
     // Mettre à jour une équipe existante
     public TeamDTO updateTeam(Integer id, String name, Integer captainId, Integer tournamentId) {
         Optional<Team> teamOpt = teamRepository.findById(id);
@@ -74,7 +87,7 @@ public class TeamService {
         Team team = teamOpt.get();
         team.setName(name);
         team.setTournamentId(tournamentId);
-        
+
         // Mise à jour du capitaine si disponible
         Optional<User> captainOpt = userRepository.findById(captainId);
         if (captainOpt.isPresent()) {
@@ -83,7 +96,7 @@ public class TeamService {
         Team updatedTeam = teamRepository.save(team);
         return convertToDTO(updatedTeam);
     }
-    
+
     // Supprimer une équipe par ID
     public boolean deleteTeam(Integer id) {
         if (teamRepository.existsById(id)) {
@@ -92,7 +105,7 @@ public class TeamService {
         }
         return false;
     }
-    
+
     // Méthode utilitaire pour convertir l'entité Team en TeamDTO
     private TeamDTO convertToDTO(Team team) {
         User captain = team.getCaptain();
