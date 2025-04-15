@@ -105,15 +105,21 @@ public class GatewayService {
 
     public TeamDTO getTeamById(Integer id) {
         try {
-            return restTemplate.getForObject(serviceRest2BaseUrl + "/teams/" + id, TeamDTO.class);
+            return restTemplate.getForObject(serviceRest1BaseUrl + "/teams/" + id, TeamDTO.class);
         } catch (HttpClientErrorException | HttpServerErrorException ex) {
             throw new RuntimeException("Erreur lors de la récupération de l'équipe", ex);
         }
     }
 
-    public TeamDTO createTeam(TeamDTO teamDTO) {
+    public TeamDTO createTeam(String name, Integer tournamentId) {
         try {
-            return restTemplate.postForObject(serviceRest2BaseUrl + "/teams", teamDTO, TeamDTO.class);
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("name", name);
+            payload.put("tournamentId", tournamentId);
+
+            // Appel vers le controller de serviceRest1 (où tu récupères le user connecté
+            // via la session)
+            return restTemplate.postForObject(serviceRest1BaseUrl + "/teams", payload, TeamDTO.class);
         } catch (HttpClientErrorException | HttpServerErrorException ex) {
             throw new RuntimeException("Erreur lors de la création de l'équipe", ex);
         }
@@ -121,7 +127,7 @@ public class GatewayService {
 
     public boolean updateTeam(Integer id, TeamDTO teamDTO) {
         try {
-            restTemplate.put(serviceRest2BaseUrl + "/teams/" + id, teamDTO);
+            restTemplate.put(serviceRest1BaseUrl + "/teams/" + id, teamDTO);
             return true;
         } catch (HttpClientErrorException | HttpServerErrorException ex) {
             throw new RuntimeException("Erreur lors de la mise à jour de l'équipe", ex);
@@ -130,7 +136,7 @@ public class GatewayService {
 
     public boolean deleteTeam(Integer id) {
         try {
-            restTemplate.delete(serviceRest2BaseUrl + "/teams/" + id);
+            restTemplate.delete(serviceRest1BaseUrl + "/teams/" + id);
             return true;
         } catch (HttpClientErrorException | HttpServerErrorException ex) {
             throw new RuntimeException("Erreur lors de la suppression de l'équipe", ex);
