@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import java.util.*;
 
@@ -36,6 +38,14 @@ public class GatewayService {
                     : Collections.emptyList();
         } catch (HttpClientErrorException | HttpServerErrorException ex) {
             throw new RuntimeException("Erreur lors de la récupération des utilisateurs", ex);
+        }
+    }
+
+    public UserDTO getUserByEmail(String email) {
+        try {
+            return restTemplate.getForObject(serviceRest1BaseUrl + "/users/email/{email}", UserDTO.class, email);
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            throw new RuntimeException("Erreur lors de la récupération de l'utilisateur avec l'email : " + email, ex);
         }
     }
 
@@ -91,6 +101,21 @@ public class GatewayService {
     }
 
     // -------------------------- EQUIPES --------------------------
+
+    public List<TeamDTO> getTeamsByTournament(Integer tournamentId) {
+        try {
+            // Appel au service avec paramètre tournamentId
+            ResponseEntity<TeamDTO[]> response = restTemplate.getForEntity(
+                    serviceRest1BaseUrl + "/teams?tournamentId=" + tournamentId,
+                    TeamDTO[].class);
+            return response.getStatusCode().is2xxSuccessful()
+                    ? Arrays.asList(response.getBody())
+                    : Collections.emptyList();
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            throw new RuntimeException("Erreur lors de la récupération des équipes pour le tournoi: " + tournamentId,
+                    ex);
+        }
+    }
 
     public List<TeamDTO> getAllTeams() {
         try {

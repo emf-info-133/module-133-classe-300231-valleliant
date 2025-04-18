@@ -8,5 +8,11 @@ import com.monprojet.service1.models.Team;
 @Repository
 public interface TeamRepository extends JpaRepository<Team, Integer> {
     List<Team> findByCaptainId(Integer captainId);
+
     List<Team> findByTournamentId(Integer tournamentId);
+
+    boolean existsByNameAndTournamentId(String name, Integer tournamentId);
+
+    boolean existsByNameAndTournamentIdAndIdNot(String name, Integer tournamentId, Integer id);
+
 }

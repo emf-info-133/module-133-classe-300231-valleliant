@@ -40,6 +40,12 @@ public class UserService {
                 .orElse(null);
     }
 
+    public UserDTO getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(user -> new UserDTO(user.getId(), user.getName(), user.getEmail()))
+                .orElse(null);
+    }
+
     // Récupérer un utilisateur par nom
     public UserDTO getUserByName(String name) {
         return userRepository.findByName(name)

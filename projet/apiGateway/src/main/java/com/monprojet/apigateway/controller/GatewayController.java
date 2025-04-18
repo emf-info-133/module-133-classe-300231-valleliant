@@ -122,12 +122,23 @@ public class GatewayController {
     // ---------------- TEAMS ----------------
 
     @GetMapping("/teams")
-    public ResponseEntity<List<TeamDTO>> getAllTeams(HttpServletRequest request) {
+    public ResponseEntity<List<TeamDTO>> getAllTeams(
+            @RequestParam(required = false) Integer tournamentId,
+            HttpServletRequest request) {
         if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
         }
 
-        List<TeamDTO> teams = gatewayService.getAllTeams();
+        List<TeamDTO> teams;
+        if (tournamentId != null) {
+            // Si un tournamentId est fourni, filtrer les équipes
+
+            teams = gatewayService.getTeamsByTournament(tournamentId);
+        } else {
+            // Sinon, récupérer toutes les équipes
+            teams = gatewayService.getAllTeams();
+        }
+
         return teams.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(teams);
     }
 
@@ -141,55 +152,75 @@ public class GatewayController {
     }
 
     @PostMapping("/teams")
-    public ResponseEntity<TeamDTO> createTeam(@RequestBody TeamDTO teamDTO) {
-        // Validation des données de l'équipe
-        if (teamDTO.getName() == null || teamDTO.getName().isEmpty()) {
-            // Crée un TeamDTO vide pour garder la structure
-            TeamDTO errorResponse = new TeamDTO();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
-
-        if (teamDTO.getTournament() == null) {
-            // Crée un TeamDTO vide pour garder la structure
-            TeamDTO errorResponse = new TeamDTO();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
-
-        // Vérification de l'ID du capitaine
-        Integer captainId = teamDTO.getCaptain();
-        if (captainId == null) {
-            // Crée un TeamDTO vide pour garder la structure
-            TeamDTO errorResponse = new TeamDTO();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
-
-        // Création de l'équipe via le service Gateway
-        TeamDTO createdTeam = gatewayService.createTeam(teamDTO);
-
-        // Retourner l'équipe créée avec un statut 201 (Créée)
-        return new ResponseEntity<>(createdTeam, HttpStatus.CREATED);
-    }
-
-    @PutMapping("/teams/{id}")
-    @Operation(summary = "Mettre à jour une équipe par ID (utilisateur ayant créé l'équipe ou administrateur uniquement)")
-    public ResponseEntity<Void> updateTeam(@PathVariable Integer id, @RequestBody TeamDTO teamDTO,
-            HttpServletRequest request) {
+    public ResponseEntity<TeamDTO> createTeam(@RequestBody TeamDTO teamDTO, HttpServletRequest request) {
         if (!isUserLoggedIn(request)) {
             return ResponseEntity.status(401).build();
         }
 
+        // Récupérer l'utilisateur connecté
         HttpSession session = request.getSession(false);
-        UserDTO currentUser = (UserDTO) session.getAttribute("user");
 
-        // Si l'utilisateur connecté n'est pas l'administrateur et n'est pas celui qui a
-        // créé l'équipe
-        TeamDTO team = gatewayService.getTeamById(id);
-        if (team == null || (!isAdmin(request) || !team.getCaptain().equals(currentUser.getId()))) {
-            return ResponseEntity.status(403).build(); // Accès interdit
+        String email = (String) session.getAttribute("user");
+        UserDTO currentUser = gatewayService.getUserByEmail(email);
+
+        // Définir l'utilisateur connecté comme capitaine si ce n'est pas déjà le cas
+        if (teamDTO.getCaptain() == null) {
+            teamDTO.setCaptain(currentUser.getId());
         }
 
-        boolean updated = gatewayService.updateTeam(id, teamDTO);
-        return updated ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        TeamDTO created = gatewayService.createTeam(teamDTO);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/teams/{id}")
+    @Operation(summary = "Mettre à jour une équipe par ID (utilisateur ayant créé l'équipe ou administrateur uniquement)")
+    public ResponseEntity<Void> updateTeam(
+            @PathVariable Integer id,
+            @RequestBody TeamDTO teamDTO,
+            HttpServletRequest request) {
+
+        if (!isUserLoggedIn(request)) {
+            return ResponseEntity.status(401).build(); // Utilisateur non connecté
+        }
+
+        HttpSession session = request.getSession(false);
+        String email = (String) session.getAttribute("user");
+        UserDTO currentUser = gatewayService.getUserByEmail(email);
+
+        if (currentUser == null) {
+            return ResponseEntity.status(401).build(); // Aucun utilisateur trouvé
+        }
+
+        // Récupérer l’équipe actuelle
+        TeamDTO existingTeam = gatewayService.getTeamById(id);
+        if (existingTeam == null) {
+            return ResponseEntity.notFound().build(); // L’équipe n’existe pas
+        }
+
+        // Vérifier si l’utilisateur est autorisé à modifier l’équipe
+        if (!(isAdmin(request) || existingTeam.getCaptain().equals(currentUser.getId()))) {
+            return ResponseEntity.status(403).build(); // Non autorisé
+        }
+
+        // Fallback sur le capitaine s’il est manquant
+        if (teamDTO.getCaptain() == null) {
+            teamDTO.setCaptain(currentUser.getId());
+        }
+
+        // Sécurité basique : éviter d’envoyer un DTO incomplet
+        if (teamDTO.getName() == null || teamDTO.getName().trim().isEmpty()
+                || teamDTO.getTournament() == null) {
+            return ResponseEntity.badRequest().build(); // Mauvaise requête
+        }
+
+        // Exécution de la mise à jour
+        try {
+            boolean updated = gatewayService.updateTeam(id, teamDTO);
+            return updated ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        } catch (Exception ex) {
+            System.err.println("Erreur lors du PUT : " + ex.getMessage());
+            return ResponseEntity.status(500).build(); // Erreur serveur
+        }
     }
 
     @DeleteMapping("/teams/{id}")

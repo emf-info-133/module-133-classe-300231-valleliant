@@ -52,6 +52,9 @@ public class TeamService {
 
     // Créer une nouvelle équipe
     public TeamDTO createTeam(String name, Integer captainId, Integer tournamentId) {
+        if (teamRepository.existsByNameAndTournamentId(name, tournamentId)) {
+            throw new IllegalArgumentException("Une équipe avec ce nom existe déjà dans ce tournoi.");
+        }
         Optional<User> captainOpt = userRepository.findById(captainId);
         if (!captainOpt.isPresent()) {
             return null; // Ou lancer une exception si le capitaine n'existe pas
@@ -66,20 +69,39 @@ public class TeamService {
     }
 
     // Mettre à jour une équipe existante
+    // Mettre à jour une équipe existante
     public TeamDTO updateTeam(Integer id, String name, Integer captainId, Integer tournamentId) {
+        // Vérification si l'équipe existe
         Optional<Team> teamOpt = teamRepository.findById(id);
         if (!teamOpt.isPresent()) {
-            return null;
+            throw new IllegalArgumentException("Équipe non trouvée");
         }
         Team team = teamOpt.get();
+
+        // ⚠️ Vérification de doublon de nom dans le même tournoi (sauf soi-même)
+        if (teamRepository.existsByNameAndTournamentIdAndIdNot(name, tournamentId, id)) {
+            throw new IllegalArgumentException("Une autre équipe avec ce nom existe déjà dans ce tournoi.");
+        }
+
+        // Vérification que le tournoi existe (si besoin)
+        Optional<Team> tournamentOpt = teamRepository.findById(tournamentId);
+        if (!tournamentOpt.isPresent()) {
+            throw new IllegalArgumentException("Tournoi non trouvé");
+        }
+
+        // Mise à jour des champs
         team.setName(name);
         team.setTournamentId(tournamentId);
 
-        // Mise à jour du capitaine si disponible
-        Optional<User> captainOpt = userRepository.findById(captainId);
-        if (captainOpt.isPresent()) {
-            team.setCaptain(captainOpt.get());
+        if (captainId != null) {
+            Optional<User> captainOpt = userRepository.findById(captainId);
+            if (captainOpt.isPresent()) {
+                team.setCaptain(captainOpt.get());
+            } else {
+                throw new IllegalArgumentException("Capitaine non trouvé");
+            }
         }
+
         Team updatedTeam = teamRepository.save(team);
         return convertToDTO(updatedTeam);
     }
