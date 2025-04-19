@@ -77,8 +77,9 @@ public class GatewayController {
         }
 
         HttpSession session = request.getSession(false);
-        String email = (String) session.getAttribute("user");
-        UserDTO currentUser = gatewayService.getUserByEmail(email);
+        String identifiant = (String) session.getAttribute("user");
+
+        UserDTO currentUser = gatewayService.findUserByEmailOrName(identifiant);
 
         // Vérifier si l'utilisateur est l'administrateur ou l'utilisateur lui-même
         if (!(currentUser.isAdmin() || currentUser.getId().equals(id))) {
@@ -130,8 +131,9 @@ public class GatewayController {
 
         // Récupérer l'utilisateur connecté
         HttpSession session = request.getSession(false);
-        String email = (String) session.getAttribute("user");
-        UserDTO currentUser = gatewayService.getUserByEmail(email);
+        String identifiant = (String) session.getAttribute("user");
+
+        UserDTO currentUser = gatewayService.findUserByEmailOrName(identifiant);
 
         // Définir l'utilisateur connecté comme capitaine si ce n'est pas déjà le cas
         if (teamDTO.getCaptain() == null) {
@@ -154,12 +156,9 @@ public class GatewayController {
         }
 
         HttpSession session = request.getSession(false);
-        String email = (String) session.getAttribute("user");
-        UserDTO currentUser = gatewayService.getUserByEmail(email);
+        String identifiant = (String) session.getAttribute("user");
 
-        if (currentUser == null) {
-            return ResponseEntity.status(401).build(); // Aucun utilisateur trouvé
-        }
+        UserDTO currentUser = gatewayService.findUserByEmailOrName(identifiant);
 
         // Récupérer l’équipe actuelle
         TeamDTO existingTeam = gatewayService.getTeamById(id);
@@ -206,8 +205,9 @@ public class GatewayController {
         }
 
         HttpSession session = request.getSession(false);
-        String email = (String) session.getAttribute("user");
-        UserDTO currentUser = gatewayService.getUserByEmail(email);
+        String identifiant = (String) session.getAttribute("user");
+
+        UserDTO currentUser = gatewayService.findUserByEmailOrName(identifiant);
 
         if (currentUser == null) {
             return ResponseEntity.status(401).build(); // Aucun utilisateur trouvé

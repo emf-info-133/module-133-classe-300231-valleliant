@@ -41,11 +41,20 @@ public class GatewayService {
         }
     }
 
+    public UserDTO getUserByName(String name) {
+        return restTemplate.getForObject(serviceRest1BaseUrl + "/users/name/{name}", UserDTO.class, name);
+    }
+
     public UserDTO getUserByEmail(String email) {
+        return restTemplate.getForObject(serviceRest1BaseUrl + "/users/email/{email}", UserDTO.class, email);
+    }
+
+    public UserDTO findUserByEmailOrName(String identifiant) {
         try {
-            return restTemplate.getForObject(serviceRest1BaseUrl + "/users/email/{email}", UserDTO.class, email);
-        } catch (HttpClientErrorException | HttpServerErrorException ex) {
-            throw new RuntimeException("Erreur lors de la récupération de l'utilisateur avec l'email : " + email, ex);
+            return getUserByEmail(identifiant);
+        } catch (HttpClientErrorException.NotFound e) {
+            System.out.println("Email non trouvé, tentative avec le nom d'utilisateur...");
+            return getUserByName(identifiant);
         }
     }
 
