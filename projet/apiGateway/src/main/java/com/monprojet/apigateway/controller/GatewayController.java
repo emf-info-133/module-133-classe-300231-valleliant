@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Optional;
 
 // ... imports inchangés ...
 
@@ -33,33 +34,16 @@ public class GatewayController {
     private boolean isAdmin(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null) {
-            System.out.println("Pas de session active.");
             return false;
         }
 
         Object userObj = session.getAttribute("user");
-        if (userObj == null) {
-            System.out.println("Aucun utilisateur en session.");
-            return false;
-        }
-
-        if (!(userObj instanceof UserDTO)) {
-            System.out.println("L'objet 'user' en session n'est pas un UserDTO.");
+        if (userObj == null || !(userObj instanceof UserDTO)) {
             return false;
         }
 
         UserDTO user = (UserDTO) userObj;
-        String email = user.getEmail();
-        System.out.println("Utilisateur connecté : " + email); // Log pour vérifier l'email stocké dans la session
-
-        // Log supplémentaire pour inspecter l'email
-        if (email == null) {
-            System.out.println("L'email de l'utilisateur est null.");
-        } else {
-            System.out.println("Email de l'utilisateur : " + email);
-        }
-
-        return email != null && email.equalsIgnoreCase("admin@admin.com");
+        return user.isAdmin(); // Vérification du rôle administrateur
     }
 
     // --- USERS ---
@@ -84,37 +68,24 @@ public class GatewayController {
         return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
     }
 
-    @PostMapping("/users")
-    @Operation(summary = "Créer un nouvel utilisateur (admin uniquement)")
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO, @RequestParam String rawPassword,
-            HttpServletRequest request) {
-        if (!isUserLoggedIn(request)) {
-            return ResponseEntity.status(401).build();
-        }
-
-        // Appel du service avec le UserDTO et le mot de passe brut
-        UserDTO createdUser = gatewayService.createUser(userDTO, rawPassword);
-
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
-    }
-
     @PutMapping("/users/{id}")
     @Operation(summary = "Mettre à jour un utilisateur par ID (utilisateur lui-même ou administrateur uniquement)")
     public ResponseEntity<Void> updateUser(@PathVariable Integer id, @RequestBody UserDTO userDTO,
             HttpServletRequest request) {
         if (!isUserLoggedIn(request)) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(401).build(); // Utilisateur non connecté
         }
 
         HttpSession session = request.getSession(false);
-        UserDTO currentUser = (UserDTO) session.getAttribute("user");
+        String email = (String) session.getAttribute("user");
+        UserDTO currentUser = gatewayService.getUserByEmail(email);
 
-        // Si l'utilisateur connecté n'est pas l'administrateur et n'est pas celui qu'il
-        // veut mettre à jour
-        if (!currentUser.getId().equals(id)) {
+        // Vérifier si l'utilisateur est l'administrateur ou l'utilisateur lui-même
+        if (!(currentUser.isAdmin() || currentUser.getId().equals(id))) {
             return ResponseEntity.status(403).build(); // Accès interdit
         }
 
+        // Mise à jour de l'utilisateur
         boolean updated = gatewayService.updateUser(id, userDTO);
         return updated ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
@@ -159,7 +130,6 @@ public class GatewayController {
 
         // Récupérer l'utilisateur connecté
         HttpSession session = request.getSession(false);
-
         String email = (String) session.getAttribute("user");
         UserDTO currentUser = gatewayService.getUserByEmail(email);
 
@@ -226,9 +196,29 @@ public class GatewayController {
     @DeleteMapping("/teams/{id}")
     public ResponseEntity<Void> deleteTeam(@PathVariable Integer id, HttpServletRequest request) {
         if (!isUserLoggedIn(request)) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(401).build(); // Utilisateur non connecté
         }
 
+        // Récupérer l’équipe actuelle
+        TeamDTO existingTeam = gatewayService.getTeamById(id);
+        if (existingTeam == null) {
+            return ResponseEntity.notFound().build(); // L’équipe n’existe pas
+        }
+
+        HttpSession session = request.getSession(false);
+        String email = (String) session.getAttribute("user");
+        UserDTO currentUser = gatewayService.getUserByEmail(email);
+
+        if (currentUser == null) {
+            return ResponseEntity.status(401).build(); // Aucun utilisateur trouvé
+        }
+
+        // Vérifier si l’utilisateur est administrateur ou capitaine de l’équipe
+        if (!(isAdmin(request) || existingTeam.getCaptain().equals(currentUser.getId()))) {
+            return ResponseEntity.status(403).build(); // Non autorisé
+        }
+
+        // Suppression de l’équipe
         boolean deleted = gatewayService.deleteTeam(id);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }

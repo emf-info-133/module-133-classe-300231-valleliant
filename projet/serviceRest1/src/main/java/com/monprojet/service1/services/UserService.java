@@ -64,6 +64,11 @@ public class UserService {
             throw new IllegalArgumentException("Un utilisateur avec cet email existe déjà.");
         }
 
+        // Vérifier si le name existe déjà dans la base de données
+        if (userRepository.findByName(userDTO.getName()).isPresent()) {
+            throw new IllegalArgumentException("Un utilisateur avec ce nom existe déjà.");
+        }
+
         // Hachage du mot de passe
         String hashedPassword = passwordEncoder.encode(rawPassword);
 
@@ -86,26 +91,33 @@ public class UserService {
     }
 
     // Mettre à jour un utilisateur existant
-    public UserDTO updateUser(Integer id, UserDTO userDTO) {
+    public UserDTO updateUser(Integer id, String name, String email) {
+        // Vérification si l'utilisateur existe dans la base de données
         Optional<User> userOpt = userRepository.findById(id);
         if (!userOpt.isPresent()) {
-            return null; // Ou lancer une exception spécifique
+            throw new IllegalArgumentException("Utilisateur non trouvé");
         }
         User user = userOpt.get();
-        user.setName(userDTO.getName());
-        user.setEmail(userDTO.getEmail());
-        // Ici, on pourrait aussi gérer la mise à jour du mot de passe dans un endpoint
-        // dédié
+
+        // ⚠️ Vérification de doublon de nom (sauf soi-même)
+        if (userRepository.existsByNameAndIdNot(name, id)) {
+            throw new IllegalArgumentException("Un utilisateur avec ce nom existe déjà.");
+        }
+
+        // ⚠️ Vérification de doublon d'email (sauf soi-même)
+        if (userRepository.existsByEmailAndIdNot(email, id)) {
+            throw new IllegalArgumentException("Un utilisateur avec cet email existe déjà.");
+        }
+
+        // Mise à jour des champs (nom et email)
+        user.setName(name);
+        user.setEmail(email);
+
+        // Sauvegarder les modifications
         User updatedUser = userRepository.save(user);
+
+        // Retourner le DTO avec les informations de l'utilisateur mis à jour
         return new UserDTO(updatedUser.getId(), updatedUser.getName(), updatedUser.getEmail());
     }
 
-    // Supprimer un utilisateur par ID
-    public boolean deleteUser(Integer id) {
-        if (userRepository.existsById(id)) {
-            userRepository.deleteById(id);
-            return true;
-        }
-        return false;
-    }
 }

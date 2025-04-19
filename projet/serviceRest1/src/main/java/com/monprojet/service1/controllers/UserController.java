@@ -2,11 +2,14 @@ package com.monprojet.service1.controllers;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.monprojet.service1.dto.UserDTO;
+import com.monprojet.service1.models.User;
 import com.monprojet.service1.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -63,26 +66,24 @@ public class UserController {
     public ResponseEntity<UserDTO> updateUser(
             @PathVariable Integer id,
             @RequestBody Map<String, String> payload) {
-        // Ici, nous utilisons la Map pour récupérer les valeurs de mise à jour.
+
         String name = payload.get("name");
         String email = payload.get("email");
-        // Pour la mise à jour, on considère que le mot de passe n'est pas forcément
-        // modifié.
-        UserDTO userDTO = new UserDTO(id, name, email);
-        UserDTO updatedUser = userService.updateUser(id, userDTO);
-        if (updatedUser != null) {
-            return new ResponseEntity<>(updatedUser, HttpStatus.OK);
-        }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Supprimer un utilisateur", description = "Supprime un utilisateur par son ID")
-    public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
-        boolean deleted = userService.deleteUser(id);
-        if (deleted) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        if (name == null || name.trim().isEmpty() || email == null || email.trim().isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // Erreur si l'un des champs est vide
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+        try {
+            // Appel du service pour mettre à jour l'utilisateur
+            UserDTO updatedUser = userService.updateUser(id, name, email);
+            if (updatedUser != null) {
+                return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND); // L'utilisateur n'a pas été trouvé
+            }
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT); // Erreur en cas de doublon de nom ou email
+        }
     }
 }

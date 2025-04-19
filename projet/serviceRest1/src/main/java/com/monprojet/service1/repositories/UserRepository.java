@@ -19,4 +19,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     // Recherche par email ou nom
     Optional<User> findByEmailOrName(String email, String name);
 
+    // Vérifier si un email existe déjà en excluant l'utilisateur en cours
+    boolean existsByEmailAndIdNot(String email, Integer id);
+
+    // Vérifier si un nom existe déjà en excluant l'utilisateur en cours
+    boolean existsByNameAndIdNot(String name, Integer id);
+
 }

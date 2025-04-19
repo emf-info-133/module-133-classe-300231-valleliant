@@ -13,5 +13,6 @@
 /home/ceyha/module-133-classe-300231-valleliant-1/projet/serviceRest1/src/main/java/com/monprojet/service1/models/User.java
 /home/ceyha/module-133-classe-300231-valleliant-1/projet/serviceRest1/src/main/java/com/monprojet/service1/controllers/TeamController.java
 /home/ceyha/module-133-classe-300231-valleliant-1/projet/serviceRest1/src/main/java/com/monprojet/service1/repositories/TeamRepository.java
+/home/ceyha/module-133-classe-300231-valleliant-1/projet/serviceRest1/src/main/java/com/monprojet/service1/config/DataInitializer.java
 /home/ceyha/module-133-classe-300231-valleliant-1/projet/serviceRest1/src/main/java/com/monprojet/service1/models/Team.java
 /home/ceyha/module-133-classe-300231-valleliant-1/projet/serviceRest1/src/main/java/com/monprojet/service1/Service1Application.java
