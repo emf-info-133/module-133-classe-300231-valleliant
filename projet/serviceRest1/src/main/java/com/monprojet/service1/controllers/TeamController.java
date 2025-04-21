@@ -1,7 +1,6 @@
 package com.monprojet.service1.controllers;
 
 import java.util.List;
-import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +10,11 @@ import com.monprojet.service1.services.TeamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+/**
+ * Contrôleur qui gère les opérations liées aux équipes.
+ * Il permet aux utilisateurs de récupérer, créer, mettre à jour et supprimer
+ * des équipes.
+ */
 @RestController
 @RequestMapping("/api/teams")
 @Tag(name = "Équipes", description = "API pour gérer les équipes")
@@ -23,6 +27,11 @@ public class TeamController {
         this.teamService = teamService;
     }
 
+    /**
+     * Récupère toutes les équipes.
+     * 
+     * @return Une liste de DTO représentant toutes les équipes.
+     */
     @GetMapping
     @Operation(summary = "Récupérer toutes les équipes", description = "Renvoie la liste de toutes les équipes")
     public ResponseEntity<List<TeamDTO>> getAllTeams() {
@@ -30,6 +39,13 @@ public class TeamController {
         return new ResponseEntity<>(teams, HttpStatus.OK);
     }
 
+    /**
+     * Récupère une équipe par son ID.
+     * 
+     * @param id L'ID de l'équipe à récupérer.
+     * @return Un DTO représentant l'équipe, ou une erreur 404 si l'équipe n'est pas
+     *         trouvée.
+     */
     @GetMapping("/{id}")
     @Operation(summary = "Récupérer une équipe par ID", description = "Renvoie une équipe spécifique par son ID")
     public ResponseEntity<TeamDTO> getTeamById(@PathVariable Integer id) {
@@ -40,6 +56,12 @@ public class TeamController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    /**
+     * Récupère toutes les équipes par tournoi.
+     * 
+     * @param tournamentId L'ID du tournoi pour lequel récupérer les équipes.
+     * @return Une liste de DTO représentant les équipes de ce tournoi.
+     */
     @GetMapping("/tournament/{tournamentId}")
     @Operation(summary = "Récupérer les équipes par tournoi", description = "Renvoie la liste des équipes participant à un tournoi spécifique")
     public ResponseEntity<List<TeamDTO>> getTeamsByTournament(@PathVariable Integer tournamentId) {
@@ -47,6 +69,12 @@ public class TeamController {
         return new ResponseEntity<>(teams, HttpStatus.OK);
     }
 
+    /**
+     * Récupère toutes les équipes par capitaine.
+     * 
+     * @param captainId L'ID du capitaine pour lequel récupérer les équipes.
+     * @return Une liste de DTO représentant les équipes dirigées par ce capitaine.
+     */
     @GetMapping("/captain/{captainId}")
     @Operation(summary = "Récupérer les équipes par capitaine", description = "Renvoie la liste des équipes dont l'utilisateur spécifié est capitaine")
     public ResponseEntity<List<TeamDTO>> getTeamsByCaptain(@PathVariable Integer captainId) {
@@ -54,6 +82,13 @@ public class TeamController {
         return new ResponseEntity<>(teams, HttpStatus.OK);
     }
 
+    /**
+     * Crée une nouvelle équipe.
+     * 
+     * @param teamDTO Le DTO contenant les informations de l'équipe à créer.
+     * @return Le DTO de l'équipe créée, ou une erreur 400 si des informations sont
+     *         manquantes.
+     */
     @PostMapping
     @Operation(summary = "Créer une nouvelle équipe", description = "Crée une nouvelle équipe et renvoie les détails")
     public ResponseEntity<TeamDTO> createTeam(@RequestBody TeamDTO teamDTO) {
@@ -69,12 +104,17 @@ public class TeamController {
         return new ResponseEntity<>(team, HttpStatus.CREATED);
     }
 
+    /**
+     * Met à jour une équipe existante.
+     * 
+     * @param id      L'ID de l'équipe à mettre à jour.
+     * @param teamDTO Le DTO contenant les nouvelles informations de l'équipe.
+     * @return Le DTO de l'équipe mise à jour, ou une erreur 400 si des informations
+     *         sont manquantes.
+     */
     @PutMapping("/{id}")
     @Operation(summary = "Mettre à jour une équipe", description = "Met à jour une équipe existante par son ID")
-    public ResponseEntity<TeamDTO> updateTeam(
-            @PathVariable Integer id,
-            @RequestBody TeamDTO teamDTO) {
-
+    public ResponseEntity<TeamDTO> updateTeam(@PathVariable Integer id, @RequestBody TeamDTO teamDTO) {
         try {
             // Vérification des champs obligatoires
             if (teamDTO.getName() == null || teamDTO.getName().trim().isEmpty()) {
@@ -106,6 +146,12 @@ public class TeamController {
         }
     }
 
+    /**
+     * Supprime une équipe par son ID.
+     * 
+     * @param id L'ID de l'équipe à supprimer.
+     * @return Une réponse HTTP indiquant si l'équipe a été supprimée ou non.
+     */
     @DeleteMapping("/{id}")
     @Operation(summary = "Supprimer une équipe", description = "Supprime une équipe par son ID")
     public ResponseEntity<Void> deleteTeam(@PathVariable Integer id) {

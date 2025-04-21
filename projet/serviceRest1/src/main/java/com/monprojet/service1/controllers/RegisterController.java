@@ -8,6 +8,11 @@ import com.monprojet.service1.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+/**
+ * Contrôleur qui gère l'inscription des utilisateurs.
+ * Il permet de créer un compte utilisateur en hashant le mot de passe et en
+ * validant les données de l'utilisateur.
+ */
 @RestController
 @RequestMapping("/register")
 @Tag(name = "Inscription", description = "Endpoint pour créer un compte utilisateur")
@@ -20,7 +25,10 @@ public class RegisterController {
         this.userService = userService;
     }
 
-    // DTO pour inscription
+    /**
+     * DTO représentant la requête d'inscription de l'utilisateur.
+     * Il contient les informations nécessaires pour créer un nouvel utilisateur.
+     */
     public static class RegisterRequest {
         private String name;
         private String email;
@@ -52,6 +60,17 @@ public class RegisterController {
         }
     }
 
+    /**
+     * Endpoint pour créer un compte utilisateur.
+     * Il valide les champs d'inscription, crée un utilisateur et retourne une
+     * réponse appropriée.
+     * 
+     * @param registerRequest L'objet contenant les informations d'inscription de
+     *                        l'utilisateur.
+     * @return Une réponse HTTP avec l'état de la création de l'utilisateur :
+     *         - 201 CREATED si l'utilisateur est créé avec succès.
+     *         - 400 BAD REQUEST si les champs sont invalides ou manquants.
+     */
     @PostMapping
     @Operation(summary = "Créer un compte utilisateur", description = "Inscrit un nouvel utilisateur en hashant le mot de passe")
     public ResponseEntity<Object> register(@RequestBody RegisterRequest registerRequest) {
@@ -63,7 +82,7 @@ public class RegisterController {
         }
 
         // Création du UserDTO à partir de la requête
-        UserDTO userDTO = new UserDTO(null, registerRequest.getName(), registerRequest.getEmail());
+        UserDTO userDTO = new UserDTO(null, registerRequest.getName(), registerRequest.getEmail(), false);
 
         try {
             // Création de l'utilisateur dans la base de données
@@ -74,5 +93,4 @@ public class RegisterController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-
 }

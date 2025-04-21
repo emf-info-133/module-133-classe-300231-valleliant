@@ -12,101 +12,163 @@ import com.monprojet.service1.models.User;
 import com.monprojet.service1.repositories.TeamRepository;
 import com.monprojet.service1.repositories.UserRepository;
 
+/**
+ * Service qui gère la logique métier liée aux équipes dans le cadre d'un
+ * tournoi.
+ * Permet de récupérer, créer, mettre à jour, et supprimer des équipes.
+ */
 @Service
 public class TeamService {
 
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
+    private final TeamUserService teamUserService;
 
     @Autowired
-    public TeamService(TeamRepository teamRepository, UserRepository userRepository) {
+    public TeamService(TeamRepository teamRepository, UserRepository userRepository, TeamUserService teamUserService) {
         this.teamRepository = teamRepository;
         this.userRepository = userRepository;
+        this.teamUserService = teamUserService;
     }
 
-    // Récupérer toutes les équipes
+    /**
+     * Récupère toutes les équipes.
+     * 
+     * @return Une liste de {@link TeamDTO} représentant toutes les équipes.
+     */
     public List<TeamDTO> getAllTeams() {
-        List<Team> teams = teamRepository.findAll();
-        return teams.stream().map(this::convertToDTO).collect(Collectors.toList());
+        return teamRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    // Récupérer une équipe par son ID
+    /**
+     * Récupère une équipe par son identifiant.
+     * 
+     * @param id L'identifiant de l'équipe à récupérer.
+     * @return Le {@link TeamDTO} de l'équipe trouvée ou null si l'équipe n'existe
+     *         pas.
+     */
     public TeamDTO getTeamById(Integer id) {
-        Optional<Team> teamOpt = teamRepository.findById(id);
-        return teamOpt.map(this::convertToDTO).orElse(null);
+        return teamRepository.findById(id).map(this::convertToDTO).orElse(null);
     }
 
-    // Récupérer toutes les équipes par l'ID du capitaine
+    /**
+     * Récupère toutes les équipes dirigées par un capitaine spécifié.
+     * 
+     * @param captainId L'identifiant du capitaine.
+     * @return Une liste de {@link TeamDTO} représentant les équipes dirigées par le
+     *         capitaine.
+     */
     public List<TeamDTO> getTeamsByCaptain(Integer captainId) {
-        // On suppose que le repository possède une méthode findByCaptainId
-        List<Team> teams = teamRepository.findByCaptainId(captainId);
-        return teams.stream().map(this::convertToDTO).collect(Collectors.toList());
+        return teamRepository.findByCaptainId(captainId).stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    // Récupérer toutes les équipes par ID de tournoi (si nécessaire)
+    /**
+     * Récupère toutes les équipes d'un tournoi spécifié.
+     * 
+     * @param tournamentId L'identifiant du tournoi.
+     * @return Une liste de {@link TeamDTO} représentant les équipes du tournoi.
+     */
     public List<TeamDTO> getTeamsByTournament(Integer tournamentId) {
-        // On suppose que le repository possède une méthode findByTournamentId
-        List<Team> teams = teamRepository.findByTournamentId(tournamentId);
-        return teams.stream().map(this::convertToDTO).collect(Collectors.toList());
+        return teamRepository.findByTournamentId(tournamentId).stream().map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    // Créer une nouvelle équipe
+    /**
+     * Crée une nouvelle équipe dans un tournoi.
+     * 
+     * @param name         Le nom de l'équipe.
+     * @param captainId    L'identifiant du capitaine de l'équipe.
+     * @param tournamentId L'identifiant du tournoi auquel appartient l'équipe.
+     * @return Le {@link TeamDTO} de l'équipe créée.
+     * @throws IllegalArgumentException Si le capitaine n'existe pas, si le nom est
+     *                                  déjà pris ou si le capitaine est déjà membre
+     *                                  d'une autre équipe dans ce tournoi.
+     */
     public TeamDTO createTeam(String name, Integer captainId, Integer tournamentId) {
+
+        // Vérification de l'existence du capitaine
+        User captain = userRepository.findById(captainId)
+                .orElseThrow(() -> new IllegalArgumentException("Capitaine non trouvé."));
+
+        // Vérification du nom de l'équipe
         if (teamRepository.existsByNameAndTournamentId(name, tournamentId)) {
             throw new IllegalArgumentException("Une équipe avec ce nom existe déjà dans ce tournoi.");
         }
-        Optional<User> captainOpt = userRepository.findById(captainId);
-        if (!captainOpt.isPresent()) {
-            return null; // Ou lancer une exception si le capitaine n'existe pas
+
+        // Vérification que l'utilisateur n'est pas déjà capitaine ou membre d'une autre
+        // équipe
+        if (teamRepository.existsByCaptainIdAndTournamentId(captainId, tournamentId)) {
+            throw new IllegalArgumentException("Cet utilisateur est déjà capitaine d'une équipe dans ce tournoi.");
         }
+
+        if (teamUserService.isUserAlreadyInTeamForTournament(captainId, tournamentId)) {
+            throw new IllegalArgumentException("Cet utilisateur fait déjà partie d'une équipe dans ce tournoi.");
+        }
+
+        // Création de l'équipe
         Team team = new Team();
         team.setName(name);
-        team.setCaptain(captainOpt.get());
+        team.setCaptain(captain);
         team.setTournamentId(tournamentId);
 
-        Team savedTeam = teamRepository.save(team);
-        return convertToDTO(savedTeam);
+        return convertToDTO(teamRepository.save(team));
     }
 
-    // Mettre à jour une équipe existante
-    // Mettre à jour une équipe existante
+    /**
+     * Met à jour une équipe existante.
+     * 
+     * @param id           L'identifiant de l'équipe à mettre à jour.
+     * @param name         Le nouveau nom de l'équipe.
+     * @param captainId    L'identifiant du nouveau capitaine (peut être nul).
+     * @param tournamentId L'identifiant du tournoi auquel appartient l'équipe.
+     * @return Le {@link TeamDTO} de l'équipe mise à jour.
+     * @throws IllegalArgumentException Si l'équipe n'existe pas, si le nom est déjà
+     *                                  pris, ou si le capitaine existe déjà dans
+     *                                  une autre équipe du tournoi.
+     */
     public TeamDTO updateTeam(Integer id, String name, Integer captainId, Integer tournamentId) {
-        // Vérification si l'équipe existe
-        Optional<Team> teamOpt = teamRepository.findById(id);
-        if (!teamOpt.isPresent()) {
-            throw new IllegalArgumentException("Équipe non trouvée");
-        }
-        Team team = teamOpt.get();
 
-        // ⚠️ Vérification de doublon de nom dans le même tournoi (sauf soi-même)
+        Team team = teamRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Équipe non trouvée"));
+
+        // Vérification de doublon du nom
         if (teamRepository.existsByNameAndTournamentIdAndIdNot(name, tournamentId, id)) {
             throw new IllegalArgumentException("Une autre équipe avec ce nom existe déjà dans ce tournoi.");
         }
 
-        // Vérification que le tournoi existe (si besoin)
-        Optional<Team> tournamentOpt = teamRepository.findById(tournamentId);
-        if (!tournamentOpt.isPresent()) {
-            throw new IllegalArgumentException("Tournoi non trouvé");
-        }
-
-        // Mise à jour des champs
+        // Mise à jour du nom et tournoi
         team.setName(name);
         team.setTournamentId(tournamentId);
 
-        if (captainId != null) {
-            Optional<User> captainOpt = userRepository.findById(captainId);
-            if (captainOpt.isPresent()) {
-                team.setCaptain(captainOpt.get());
-            } else {
-                throw new IllegalArgumentException("Capitaine non trouvé");
+        // Si le capitaine change, vérification
+        if (captainId != null && (team.getCaptain() == null || !captainId.equals(team.getCaptain().getId()))) {
+
+            // Vérification du capitaine
+            User captain = userRepository.findById(captainId)
+                    .orElseThrow(() -> new IllegalArgumentException("Capitaine non trouvé."));
+
+            if (teamRepository.existsByCaptainIdAndTournamentId(captainId, tournamentId)) {
+                throw new IllegalArgumentException(
+                        "Cet utilisateur est déjà capitaine d'une autre équipe dans ce tournoi.");
             }
+
+            if (teamUserService.isUserAlreadyInTeamForTournament(captainId, tournamentId)) {
+                throw new IllegalArgumentException("Cet utilisateur fait déjà partie d'une équipe dans ce tournoi.");
+            }
+
+            team.setCaptain(captain);
         }
 
-        Team updatedTeam = teamRepository.save(team);
-        return convertToDTO(updatedTeam);
+        return convertToDTO(teamRepository.save(team));
     }
 
-    // Supprimer une équipe par ID
+    /**
+     * Supprime une équipe.
+     * 
+     * @param id L'identifiant de l'équipe à supprimer.
+     * @return true si l'équipe a été supprimée avec succès, sinon false si l'équipe
+     *         n'existe pas.
+     */
     public boolean deleteTeam(Integer id) {
         if (teamRepository.existsById(id)) {
             teamRepository.deleteById(id);
@@ -115,14 +177,13 @@ public class TeamService {
         return false;
     }
 
-    // Méthode utilitaire pour convertir l'entité Team en TeamDTO
+    /**
+     * Convertit une entité {@link Team} en un DTO {@link TeamDTO}.
+     * 
+     * @param team L'équipe à convertir.
+     * @return Le DTO correspondant à l'équipe.
+     */
     private TeamDTO convertToDTO(Team team) {
-        // Récupérer l'ID du capitaine et du tournoi
-        Integer captainId = team.getCaptain().getId(); // ID du capitaine
-        Integer tournamentId = team.getTournamentId();// ID du tournoi
-
-        // Retourner un TeamDTO avec les IDs pour le capitaine et le tournoi
-        return new TeamDTO(team.getId(), team.getName(), captainId, tournamentId);
+        return new TeamDTO(team.getId(), team.getName(), team.getCaptain().getId(), team.getTournamentId());
     }
-
 }

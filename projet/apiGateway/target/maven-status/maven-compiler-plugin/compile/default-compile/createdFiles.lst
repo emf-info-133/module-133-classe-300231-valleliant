@@ -1,4 +1,5 @@
 com/monprojet/apigateway/controller/LoginController.class
+com/monprojet/apigateway/dto/TeamUserDTO.class
 com/monprojet/apigateway/dto/TeamDTO.class
 com/monprojet/apigateway/dto/MatchDTO.class
 com/monprojet/apigateway/dto/TournamentWithAdminDTO.class

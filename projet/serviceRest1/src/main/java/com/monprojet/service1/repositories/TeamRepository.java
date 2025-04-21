@@ -1,6 +1,8 @@
 package com.monprojet.service1.repositories;
 
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import com.monprojet.service1.models.Team;
@@ -14,5 +16,9 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
     boolean existsByNameAndTournamentId(String name, Integer tournamentId);
 
     boolean existsByNameAndTournamentIdAndIdNot(String name, Integer tournamentId, Integer id);
+
+    boolean existsByCaptainIdAndTournamentId(Integer captainId, Integer tournamentId);
+
+    Optional<Team> findByCaptainIdAndTournamentId(Integer userId, Integer tournamentId);
 
 }

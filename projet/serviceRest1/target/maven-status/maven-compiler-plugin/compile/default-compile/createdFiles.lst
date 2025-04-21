@@ -1,11 +1,11 @@
 com/monprojet/service1/services/TeamService.class
-com/monprojet/service1/security/InMemorySessionService.class
 com/monprojet/service1/controllers/LoginController.class
 com/monprojet/service1/config/DataInitializer.class
 com/monprojet/service1/repositories/UserRepository.class
 com/monprojet/service1/models/User.class
 com/monprojet/service1/Service1Application.class
 com/monprojet/service1/controllers/LoginController$LoginRequest.class
+com/monprojet/service1/repositories/TeamUserRepository.class
 com/monprojet/service1/controllers/RegisterController.class
 com/monprojet/service1/controllers/RegisterController$RegisterRequest.class
 com/monprojet/service1/dto/TeamDTO.class
@@ -13,8 +13,11 @@ com/monprojet/service1/controllers/TeamController.class
 com/monprojet/service1/services/UserService.class
 com/monprojet/service1/config/SecurityConfig.class
 com/monprojet/service1/controllers/UserController.class
+com/monprojet/service1/services/TeamUserService.class
 com/monprojet/service1/security/CustomUserDetailsService.class
 com/monprojet/service1/models/TeamUser.class
 com/monprojet/service1/repositories/TeamRepository.class
 com/monprojet/service1/dto/UserDTO.class
+com/monprojet/service1/controllers/TeamUserController.class
+com/monprojet/service1/dto/TeamUserDTO.class
 com/monprojet/service1/models/Team.class
