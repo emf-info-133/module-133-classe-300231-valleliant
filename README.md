@@ -1,2 +1,1 @@
-# module133
-Template de projet pour module 133
+Le frontend (my-react-tailwind) n'est pas totalement fonctionnel avec le backend, il y'a cretaines choses qui ne fonctionne pas. Nous l'avons laissé dans le repository mais il vaut mieux tester le backend avec postman pour être sûr que tout fonctionne correctement.
