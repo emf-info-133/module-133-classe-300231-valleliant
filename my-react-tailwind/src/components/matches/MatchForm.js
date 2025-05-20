@@ -72,23 +72,65 @@ const MatchForm = ({ match, onSave, onCancel }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (team1Id === team2Id && team1Id !== '') {
-        setError('Une équipe ne peut pas jouer contre elle-même.');
-        return;
+    
+    // Validation des champs requis
+    if (!tournamentId) {
+      setError('Veuillez sélectionner un tournoi.');
+      return;
     }
+    
+    if (!team1Id) {
+      setError('Veuillez sélectionner la première équipe.');
+      return;
+    }
+    
+    if (!team2Id) {
+      setError('Veuillez sélectionner la deuxième équipe.');
+      return;
+    }
+    
+    if (!date) {
+      setError('La date du match est requise.');
+      return;
+    }
+    
+    if (team1Id === team2Id) {
+      setError('Une équipe ne peut pas jouer contre elle-même.');
+      return;
+    }
+    
     setError('');
     setLoading(true);
 
-    const matchData = {
-      tournamentId: parseInt(tournamentId, 10),
-      team1Id: parseInt(team1Id, 10),
-      team2Id: parseInt(team2Id, 10),
-      score1: score1,
-      score2: score2,
-      date: date
-    };
-
     try {
+      // Conversion explicite des IDs en nombres
+      const tournamentIdNum = parseInt(tournamentId, 10);
+      const team1IdNum = parseInt(team1Id, 10);
+      const team2IdNum = parseInt(team2Id, 10);
+      
+      // Vérification des valeurs numériques
+      if (isNaN(tournamentIdNum) || tournamentIdNum > 2147483647) {
+        throw new Error('ID tournoi invalide');
+      }
+
+      if (isNaN(team1IdNum) || team1IdNum > 2147483647) {
+        throw new Error('ID équipe 1 invalide');
+      }
+
+      if (isNaN(team2IdNum) || team2IdNum > 2147483647) {
+        throw new Error('ID équipe 2 invalide');
+      }
+
+      // Format exact attendu par l'API selon MatchDTO
+      const matchData = {
+        tournamentId: tournamentIdNum,
+        team1Id: team1IdNum,
+        team2Id: team2IdNum,
+        score1,
+        score2,
+        date
+      };
+
       let savedMatch;
       if (match) {
         await api.updateMatch(match.id, matchData);
@@ -99,7 +141,11 @@ const MatchForm = ({ match, onSave, onCancel }) => {
       }
       onSave(savedMatch);
     } catch (err) {
-      setError(err.response?.data?.message || 'Erreur lors de la sauvegarde du match.');
+      if (err.message) {
+        setError(err.message);
+      } else {
+        setError(err.response?.data?.message || 'Erreur lors de la sauvegarde du match.');
+      }
       console.error("Erreur sauvegarde match:", err);
     } finally {
       setLoading(false);

@@ -3,10 +3,14 @@ import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import * as api from '../services/api';
 import Modal from '../components/common/Modal';
+import TournamentForm from '../components/tournaments/TournamentForm';
+import MatchForm from '../components/matches/MatchForm';
 
 const UserDashboard = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [showJoinTeamModal, setShowJoinTeamModal] = useState(false);
+  const [showTournamentModal, setShowTournamentModal] = useState(false);
+  const [showMatchModal, setShowMatchModal] = useState(false);
   const [teams, setTeams] = useState([]);
   const [selectedTeamId, setSelectedTeamId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -76,6 +80,28 @@ const UserDashboard = () => {
     }
   };
 
+  const handleSaveTournament = async (tournamentData) => {
+    try {
+      await api.createTournament(tournamentData);
+      setSuccess("Le tournoi a été créé avec succès !");
+      setShowTournamentModal(false);
+    } catch (err) {
+      console.error("Erreur création tournoi:", err);
+      setError(err.response?.data?.message || "Erreur lors de la création du tournoi.");
+    }
+  };
+
+  const handleSaveMatch = async (matchData) => {
+    try {
+      await api.createMatch(matchData);
+      setSuccess("Le match a été créé avec succès !");
+      setShowMatchModal(false);
+    } catch (err) {
+      console.error("Erreur création match:", err);
+      setError(err.response?.data?.message || "Erreur lors de la création du match.");
+    }
+  };
+
   return (
     <div>
       <h1 className="text-3xl font-bold text-indigo-400 mb-6">Mon Espace</h1>
@@ -89,6 +115,12 @@ const UserDashboard = () => {
       {success && (
         <div className="bg-green-900 border border-green-600 text-green-200 p-3 rounded mb-6">
           {success}
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-900 border border-red-600 text-red-200 p-3 rounded mb-6">
+          {error}
         </div>
       )}
 
@@ -110,19 +142,25 @@ const UserDashboard = () => {
           <span className="font-medium text-indigo-400 hover:text-indigo-300">Rejoindre une équipe &rarr;</span>
         </div>
          
-        {/* Carte pour voir les tournois */}
-        <Link to="/tournaments" className="block bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-700 transition duration-150">
+        {/* Carte pour créer un tournoi */}
+        <div 
+          onClick={() => isAdmin ? setShowTournamentModal(true) : setError("Seuls les administrateurs peuvent créer des tournois.")}
+          className="bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-700 cursor-pointer transition duration-150"
+        >
           <h2 className="text-xl font-semibold text-indigo-400 mb-3">Tournois</h2>
-          <p className="text-gray-400 mb-4">Consulter les tournois disponibles et passés.</p>
-          <span className="font-medium text-indigo-400 hover:text-indigo-300">Voir les tournois &rarr;</span>
-        </Link>
+          <p className="text-gray-400 mb-4">Créer un nouveau tournoi (admin seulement).</p>
+          <span className="font-medium text-indigo-400 hover:text-indigo-300">Créer un tournoi &rarr;</span>
+        </div>
         
-        {/* Carte pour voir les matchs */}
-        <Link to="/matches" className="block bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-700 transition duration-150">
+        {/* Carte pour créer un match */}
+        <div 
+          onClick={() => isAdmin ? setShowMatchModal(true) : setError("Seuls les administrateurs peuvent créer des matchs.")}
+          className="bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-700 cursor-pointer transition duration-150"
+        >
           <h2 className="text-xl font-semibold text-indigo-400 mb-3">Matchs</h2>
-          <p className="text-gray-400 mb-4">Suivre les résultats des matchs en cours.</p>
-          <span className="font-medium text-indigo-400 hover:text-indigo-300">Voir les matchs &rarr;</span>
-        </Link>
+          <p className="text-gray-400 mb-4">Créer un nouveau match (admin seulement).</p>
+          <span className="font-medium text-indigo-400 hover:text-indigo-300">Créer un match &rarr;</span>
+        </div>
       </div>
 
       {/* Modal pour rejoindre une équipe */}
@@ -150,12 +188,6 @@ const UserDashboard = () => {
               ))}
             </select>
 
-            {error && (
-              <div className="text-red-500 text-sm p-3 bg-red-900 border border-red-700 rounded">
-                {error}
-              </div>
-            )}
-
             <div className="flex justify-end space-x-3 pt-4">
               <button 
                 type="button" 
@@ -175,6 +207,32 @@ const UserDashboard = () => {
               </button>
             </div>
           </div>
+        </Modal>
+      )}
+
+      {/* Modal pour créer un tournoi */}
+      {showTournamentModal && (
+        <Modal 
+          title="Créer un tournoi" 
+          onClose={() => setShowTournamentModal(false)}
+        >
+          <TournamentForm 
+            onSave={handleSaveTournament} 
+            onCancel={() => setShowTournamentModal(false)} 
+          />
+        </Modal>
+      )}
+
+      {/* Modal pour créer un match */}
+      {showMatchModal && (
+        <Modal 
+          title="Créer un match" 
+          onClose={() => setShowMatchModal(false)}
+        >
+          <MatchForm 
+            onSave={handleSaveMatch} 
+            onCancel={() => setShowMatchModal(false)} 
+          />
         </Modal>
       )}
     </div>

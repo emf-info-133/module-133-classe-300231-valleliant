@@ -39,27 +39,46 @@ export const updateUser = (id, userData) => apiClient.put(`/api/users/${id}`, us
 // --- Équipes (Teams) ---
 export const getAllTeams = () => apiClient.get('/api/teams');
 export const getTeamById = (id) => apiClient.get(`/api/teams/${id}`);
-export const createTeam = (teamData) => apiClient.post('/api/teams', teamData);
-export const updateTeam = (id, teamData) => apiClient.put(`/api/teams/${id}`, teamData);
+export const createTeam = (teamData) => {
+  // Formatage selon TeamDTO.java
+  const formattedData = {
+    name: teamData.name,
+    captain: Number(teamData.captain),
+    tournament: Number(teamData.tournament)
+  };
+  console.log('Création équipe:', formattedData);
+  return apiClient.post('/api/teams', formattedData);
+};
+export const updateTeam = (id, teamData) => {
+  // Formatage selon TeamDTO.java
+  const formattedData = {
+    name: teamData.name,
+    captain: Number(teamData.captain),
+    tournament: Number(teamData.tournament)
+  };
+  return apiClient.put(`/api/teams/${id}`, formattedData);
+};
 export const deleteTeam = (id) => apiClient.delete(`/api/teams/${id}`);
 
 // --- Team Users (Membres d'équipe) ---
 // En se basant sur l'API Gateway (GatewayService.java)
 export const joinTeam = (teamUserData) => {
-  // Conservation des IDs sous forme de number pour éviter des problèmes de conversion
-  return apiClient.post('/api/team-users/join', {
+  // Formatage selon TeamUserDTO.java
+  const formattedData = {
     userId: Number(teamUserData.userId),
     teamId: Number(teamUserData.teamId)
-  });
+  };
+  console.log('Rejoindre équipe:', formattedData);
+  return apiClient.post('/api/team-users/join', formattedData);
 };
 
 export const leaveTeam = (teamUserData) => {
-  return apiClient.delete('/api/team-users/leave', { 
-    data: {
-      userId: Number(teamUserData.userId),
-      teamId: Number(teamUserData.teamId)
-    }
-  });
+  // Formatage selon TeamUserDTO.java
+  const formattedData = {
+    userId: Number(teamUserData.userId),
+    teamId: Number(teamUserData.teamId)
+  };
+  return apiClient.delete('/api/team-users/leave', { data: formattedData });
 };
 
 
@@ -67,15 +86,26 @@ export const leaveTeam = (teamUserData) => {
 export const getAllTournaments = () => apiClient.get('/api/tournaments');
 export const getTournamentById = (id) => apiClient.get(`/api/tournaments/${id}`);
 export const createTournament = (tournamentData) => {
-  // S'assurer que les ID sont des nombres
-  return apiClient.post('/api/tournaments', {
+  // Formatage selon TournamentDTO.java
+  const formattedData = {
     name: tournamentData.name,
     date: tournamentData.date,
     adminId: Number(tournamentData.adminId),
     gameId: Number(tournamentData.gameId)
-  });
+  };
+  console.log('Création tournoi:', formattedData);
+  return apiClient.post('/api/tournaments', formattedData);
 };
-export const updateTournament = (id, tournamentData) => apiClient.put(`/api/tournaments/${id}`, tournamentData);
+export const updateTournament = (id, tournamentData) => {
+  // Formatage selon TournamentDTO.java
+  const formattedData = {
+    name: tournamentData.name,
+    date: tournamentData.date,
+    adminId: Number(tournamentData.adminId),
+    gameId: Number(tournamentData.gameId)
+  };
+  return apiClient.put(`/api/tournaments/${id}`, formattedData);
+};
 export const deleteTournament = (id) => apiClient.delete(`/api/tournaments/${id}`);
 
 
@@ -83,17 +113,30 @@ export const deleteTournament = (id) => apiClient.delete(`/api/tournaments/${id}
 export const getAllMatches = () => apiClient.get('/api/matches');
 export const getMatchById = (id) => apiClient.get(`/api/matches/${id}`);
 export const createMatch = (matchData) => {
-  // S'assurer que les ID sont des nombres
-  return apiClient.post('/api/matches', {
+  // Formatage selon MatchDTO.java
+  const formattedData = {
     tournamentId: Number(matchData.tournamentId),
     team1Id: Number(matchData.team1Id),
     team2Id: Number(matchData.team2Id),
     score1: matchData.score1,
     score2: matchData.score2,
     date: matchData.date
-  });
+  };
+  console.log('Création match:', formattedData);
+  return apiClient.post('/api/matches', formattedData);
 };
-export const updateMatch = (id, matchData) => apiClient.put(`/api/matches/${id}`, matchData);
+export const updateMatch = (id, matchData) => {
+  // Formatage selon MatchDTO.java
+  const formattedData = {
+    tournamentId: Number(matchData.tournamentId),
+    team1Id: Number(matchData.team1Id),
+    team2Id: Number(matchData.team2Id),
+    score1: matchData.score1,
+    score2: matchData.score2,
+    date: matchData.date
+  };
+  return apiClient.put(`/api/matches/${id}`, formattedData);
+};
 export const deleteMatch = (id) => apiClient.delete(`/api/matches/${id}`);
 
 // --- Jeux (Games) ---

@@ -41,20 +41,54 @@ const TournamentForm = ({ tournament, onSave, onCancel }) => {
     setError('');
     setLoading(true);
 
+    // Validation de base
+    if (!name.trim()) {
+      setError('Le nom du tournoi est requis.');
+      setLoading(false);
+      return;
+    }
+    
+    if (!date) {
+      setError('La date du tournoi est requise.');
+      setLoading(false);
+      return;
+    }
+
     if (!gameId) {
       setError('Veuillez sélectionner un jeu.');
       setLoading(false);
       return;
     }
 
-    const tournamentData = {
-      name,
-      date,
-      adminId: user?.id,
-      gameId: parseInt(gameId, 10)
-    };
+    // S'assurer que l'ID utilisateur existe avant de l'envoyer
+    if (!user || !user.id) {
+      setError('Utilisateur non connecté ou ID utilisateur manquant.');
+      setLoading(false);
+      return;
+    }
 
     try {
+      // Conversion explicite des IDs en nombres
+      const adminId = parseInt(user.id, 10);
+      const gameIdNum = parseInt(gameId, 10);
+      
+      // Vérification des valeurs numériques
+      if (isNaN(adminId) || adminId > 2147483647) {
+        throw new Error('ID administrateur invalide');
+      }
+
+      if (isNaN(gameIdNum) || gameIdNum > 2147483647) {
+        throw new Error('ID jeu invalide');
+      }
+
+      // Format exact attendu par l'API
+      const tournamentData = {
+        name,
+        date,
+        adminId,
+        gameId: gameIdNum
+      };
+
       let savedTournament;
       if (tournament) {
         // Mode Édition
@@ -67,7 +101,11 @@ const TournamentForm = ({ tournament, onSave, onCancel }) => {
       }
       onSave(savedTournament);
     } catch (err) {
-      setError(err.response?.data?.message || 'Erreur lors de la sauvegarde du tournoi.');
+      if (err.message) {
+        setError(err.message);
+      } else {
+        setError(err.response?.data?.message || 'Erreur lors de la sauvegarde du tournoi.');
+      }
       console.error("Erreur sauvegarde tournoi:", err);
     } finally {
       setLoading(false);
