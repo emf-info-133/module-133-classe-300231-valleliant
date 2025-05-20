@@ -431,6 +431,18 @@ public class GatewayController {
         if (!isAdmin(request)) {
             return ResponseEntity.status(403).build(); // Utilisateur non administrateur
         }
+
+        // Récupérer l'utilisateur connecté
+        HttpSession session = request.getSession(false);
+        String identifiant = (String) session.getAttribute("user");
+
+        UserDTO currentUser = gatewayService.findUserByEmailOrName(identifiant);
+
+        // Définir l'utilisateur connecté comme capitaine si ce n'est pas déjà le cas
+        if (dto.getAdminId() == null) {
+            dto.setAdminId(currentUser.getId());
+        }
+
         TournamentDTO created = gatewayService.createTournament(dto);
         return new ResponseEntity<>(created, HttpStatus.CREATED); // Tournoi créé
     }
