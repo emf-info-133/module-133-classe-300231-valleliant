@@ -44,24 +44,57 @@ export const updateTeam = (id, teamData) => apiClient.put(`/api/teams/${id}`, te
 export const deleteTeam = (id) => apiClient.delete(`/api/teams/${id}`);
 
 // --- Team Users (Membres d'équipe) ---
-export const joinTeam = (teamUserData) => apiClient.post('/api/team-users/join', teamUserData);
-export const leaveTeam = (teamUserData) => apiClient.delete('/api/team-users/leave', { data: teamUserData });
+// En se basant sur l'API Gateway (GatewayService.java)
+export const joinTeam = (teamUserData) => {
+  // Conservation des IDs sous forme de number pour éviter des problèmes de conversion
+  return apiClient.post('/api/team-users/join', {
+    userId: Number(teamUserData.userId),
+    teamId: Number(teamUserData.teamId)
+  });
+};
+
+export const leaveTeam = (teamUserData) => {
+  return apiClient.delete('/api/team-users/leave', { 
+    data: {
+      userId: Number(teamUserData.userId),
+      teamId: Number(teamUserData.teamId)
+    }
+  });
+};
 
 
 // --- Tournois (Tournaments) ---
 export const getAllTournaments = () => apiClient.get('/api/tournaments');
 export const getTournamentById = (id) => apiClient.get(`/api/tournaments/${id}`);
-export const createTournament = (tournamentData) => apiClient.post('/api/tournaments', tournamentData); // Admin only
-export const updateTournament = (id, tournamentData) => apiClient.put(`/api/tournaments/${id}`, tournamentData); // Admin only
-export const deleteTournament = (id) => apiClient.delete(`/api/tournaments/${id}`); // Admin only
+export const createTournament = (tournamentData) => {
+  // S'assurer que les ID sont des nombres
+  return apiClient.post('/api/tournaments', {
+    name: tournamentData.name,
+    date: tournamentData.date,
+    adminId: Number(tournamentData.adminId),
+    gameId: Number(tournamentData.gameId)
+  });
+};
+export const updateTournament = (id, tournamentData) => apiClient.put(`/api/tournaments/${id}`, tournamentData);
+export const deleteTournament = (id) => apiClient.delete(`/api/tournaments/${id}`);
 
 
 // --- Matchs (Matches) ---
 export const getAllMatches = () => apiClient.get('/api/matches');
 export const getMatchById = (id) => apiClient.get(`/api/matches/${id}`);
-export const createMatch = (matchData) => apiClient.post('/api/matches', matchData); // Admin only
-export const updateMatch = (id, matchData) => apiClient.put(`/api/matches/${id}`, matchData); // Admin only
-export const deleteMatch = (id) => apiClient.delete(`/api/matches/${id}`); // Admin only
+export const createMatch = (matchData) => {
+  // S'assurer que les ID sont des nombres
+  return apiClient.post('/api/matches', {
+    tournamentId: Number(matchData.tournamentId),
+    team1Id: Number(matchData.team1Id),
+    team2Id: Number(matchData.team2Id),
+    score1: matchData.score1,
+    score2: matchData.score2,
+    date: matchData.date
+  });
+};
+export const updateMatch = (id, matchData) => apiClient.put(`/api/matches/${id}`, matchData);
+export const deleteMatch = (id) => apiClient.delete(`/api/matches/${id}`);
 
 // --- Jeux (Games) ---
 export const getAllGames = () => apiClient.get('/api/games');

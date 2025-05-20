@@ -47,15 +47,31 @@ const TeamForm = ({ team, onSave, onCancel }) => {
       return;
     }
 
-    // Données de l'équipe à envoyer
+    // S'assurer que l'ID utilisateur existe avant de l'envoyer
+    if (!user || !user.id) {
+      setError('Utilisateur non connecté ou ID utilisateur manquant.');
+      setLoading(false);
+      return;
+    }
+
+    // Données de l'équipe à envoyer - s'assurer que les IDs sont bien des entiers dans les limites Java
     const teamData = {
       name,
       tournament: parseInt(tournamentId, 10),
+      captain: user.id
     };
 
-    // Si on est en mode création et que l'API attend l'ID du capitaine
-    if (!team && user?.id) {
-        teamData.captain = user.id; 
+    // Vérification des valeurs numériques
+    if (isNaN(teamData.tournament) || teamData.tournament > 2147483647) {
+      setError('ID du tournoi invalide');
+      setLoading(false);
+      return;
+    }
+
+    if (isNaN(teamData.captain) || teamData.captain > 2147483647) {
+      setError('ID du capitaine invalide');
+      setLoading(false);
+      return;
     }
 
     try {
@@ -127,7 +143,9 @@ const TeamForm = ({ team, onSave, onCancel }) => {
         {!team && (
            <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">Capitaine</label>
-                <p className="text-gray-400 bg-gray-700 px-3 py-2 rounded-md">{user?.name || user?.email} (Vous)</p>
+                <p className="text-gray-400 bg-gray-700 px-3 py-2 rounded-md">
+                  {user?.name || user?.email} (Vous) - ID: {user?.id}
+                </p>
            </div>
        )}
 

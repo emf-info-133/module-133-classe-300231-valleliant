@@ -31,21 +31,46 @@ const UserDashboard = () => {
       return;
     }
 
+    // S'assurer que l'ID utilisateur existe avant de l'envoyer
+    if (!user || !user.id) {
+      setError('Utilisateur non connecté ou ID utilisateur manquant.');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setSuccess('');
 
     try {
+      // Conversion explicite en entiers
+      const userId = parseInt(user.id, 10);
+      const teamId = parseInt(selectedTeamId, 10);
+
+      // Vérification des valeurs numériques
+      if (isNaN(userId) || userId > 2147483647) {
+        throw new Error('ID utilisateur invalide');
+      }
+
+      if (isNaN(teamId) || teamId > 2147483647) {
+        throw new Error('ID équipe invalide');
+      }
+
       const teamUserData = {
-        userId: user?.id,
-        teamId: parseInt(selectedTeamId, 10)
+        userId: userId,
+        teamId: teamId
       };
       
+      // Utilisation d'un autre format pour la route, selon l'API documentée
       await api.joinTeam(teamUserData);
       setSuccess(`Vous avez rejoint l'équipe avec succès !`);
       setShowJoinTeamModal(false);
     } catch (err) {
-      setError(err.response?.data?.message || "Erreur lors de la tentative de rejoindre l'équipe.");
+      if (err.message) {
+        setError(err.message);
+      } else {
+        setError(err.response?.data?.message || "Erreur lors de la tentative de rejoindre l'équipe.");
+      }
+      console.error("Erreur join team:", err);
     } finally {
       setLoading(false);
     }
@@ -86,18 +111,18 @@ const UserDashboard = () => {
         </div>
          
         {/* Carte pour voir les tournois */}
-        <div className="bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-700 transition duration-150">
+        <Link to="/tournaments" className="block bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-700 transition duration-150">
           <h2 className="text-xl font-semibold text-indigo-400 mb-3">Tournois</h2>
           <p className="text-gray-400 mb-4">Consulter les tournois disponibles et passés.</p>
-          <span className="text-gray-500">(Fonctionnalité à venir)</span>
-        </div>
+          <span className="font-medium text-indigo-400 hover:text-indigo-300">Voir les tournois &rarr;</span>
+        </Link>
         
         {/* Carte pour voir les matchs */}
-        <div className="bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-700 transition duration-150">
+        <Link to="/matches" className="block bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-700 transition duration-150">
           <h2 className="text-xl font-semibold text-indigo-400 mb-3">Matchs</h2>
           <p className="text-gray-400 mb-4">Suivre les résultats des matchs en cours.</p>
-          <span className="text-gray-500">(Fonctionnalité à venir)</span>
-        </div>
+          <span className="font-medium text-indigo-400 hover:text-indigo-300">Voir les matchs &rarr;</span>
+        </Link>
       </div>
 
       {/* Modal pour rejoindre une équipe */}
