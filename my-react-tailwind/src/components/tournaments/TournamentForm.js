@@ -1,26 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import * as api from '../../services/api';
+import { useAuth } from '../../hooks/useAuth';
 
 const TournamentForm = ({ tournament, onSave, onCancel }) => {
+  const { user } = useAuth();
   const [name, setName] = useState('');
-  const [game, setGame] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [status, setStatus] = useState('Planned'); // Valeur par défaut
+  const [date, setDate] = useState('');
+  const [gameId, setGameId] = useState('');
+  const [games, setGames] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Récupérer la liste des jeux disponibles
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const response = await api.getAllGames();
+        setGames(response.data || []);
+      } catch (err) {
+        console.error("Erreur lors de la récupération des jeux:", err);
+      }
+    };
+    fetchGames();
+  }, []);
 
   useEffect(() => {
     if (tournament) {
       setName(tournament.name || '');
-      setGame(tournament.game || '');
-      // Formater la date pour l'input type="date"
-      setStartDate(tournament.startDate ? new Date(tournament.startDate).toISOString().split('T')[0] : '');
-      setStatus(tournament.status || 'Planned');
+      setDate(tournament.date || '');
+      setGameId(tournament.gameId || '');
     } else {
       setName('');
-      setGame('');
-      setStartDate('');
-      setStatus('Planned');
+      setDate('');
+      setGameId('');
     }
   }, [tournament]);
 
@@ -29,12 +41,17 @@ const TournamentForm = ({ tournament, onSave, onCancel }) => {
     setError('');
     setLoading(true);
 
+    if (!gameId) {
+      setError('Veuillez sélectionner un jeu.');
+      setLoading(false);
+      return;
+    }
+
     const tournamentData = {
       name,
-      game,
-      startDate: startDate || null, // Envoyer null si vide
-      status,
-      // Ajoutez d'autres champs si nécessaire (ex: description, maxTeams)
+      date,
+      adminId: user?.id,
+      gameId: parseInt(gameId, 10)
     };
 
     try {
@@ -72,44 +89,33 @@ const TournamentForm = ({ tournament, onSave, onCancel }) => {
         />
       </div>
       <div>
-        <label htmlFor="tournament-game" className="block text-sm font-medium text-gray-300 mb-1">Jeu</label>
+        <label htmlFor="tournament-date" className="block text-sm font-medium text-gray-300 mb-1">Date du tournoi</label>
         <input
-          id="tournament-game"
-          type="text"
-          value={game}
-          onChange={(e) => setGame(e.target.value)}
-          required
-          placeholder="Ex : Counter-Strike 2"
-          className="w-full"
-        />
-      </div>
-       <div>
-        <label htmlFor="tournament-startdate" className="block text-sm font-medium text-gray-300 mb-1">Date de début</label>
-        <input
-          id="tournament-startdate"
+          id="tournament-date"
           type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          required
           className="w-full"
         />
       </div>
-       <div>
-        <label htmlFor="tournament-status" className="block text-sm font-medium text-gray-300 mb-1">Statut</label>
-        <select 
-            id="tournament-status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="w-full"
+      <div>
+        <label htmlFor="tournament-game" className="block text-sm font-medium text-gray-300 mb-1">Jeu</label>
+        <select
+          id="tournament-game"
+          value={gameId}
+          onChange={(e) => setGameId(e.target.value)}
+          required
+          className="w-full"
         >
-            <option value="Planned">Planifié</option>
-            <option value="RegistrationOpen">Inscriptions Ouvertes</option>
-            <option value="RegistrationClosed">Inscriptions Fermées</option>
-            <option value="Ongoing">En cours</option>
-            <option value="Completed">Terminé</option>
-            <option value="Cancelled">Annulé</option>
+          <option value="">Sélectionnez un jeu</option>
+          {games.map(game => (
+            <option key={game.id} value={game.id}>
+              {game.name}
+            </option>
+          ))}
         </select>
       </div>
-       {/* Ajoutez d'autres champs ici (description, etc.) */}
 
       {error && (
         <div className="text-red-500 text-sm text-center p-3 bg-red-900 border border-red-700 rounded">

@@ -43,6 +43,10 @@ export const createTeam = (teamData) => apiClient.post('/api/teams', teamData);
 export const updateTeam = (id, teamData) => apiClient.put(`/api/teams/${id}`, teamData);
 export const deleteTeam = (id) => apiClient.delete(`/api/teams/${id}`);
 
+// --- Team Users (Membres d'équipe) ---
+export const joinTeam = (teamUserData) => apiClient.post('/api/team-users/join', teamUserData);
+export const leaveTeam = (teamUserData) => apiClient.delete('/api/team-users/leave', { data: teamUserData });
+
 
 // --- Tournois (Tournaments) ---
 export const getAllTournaments = () => apiClient.get('/api/tournaments');

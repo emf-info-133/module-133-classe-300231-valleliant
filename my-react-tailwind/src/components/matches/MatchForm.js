@@ -8,12 +8,12 @@ const MatchForm = ({ match, onSave, onCancel }) => {
   const [team2Id, setTeam2Id] = useState('');
   const [score1, setScore1] = useState('');
   const [score2, setScore2] = useState('');
-  const [matchDate, setMatchDate] = useState('');
-  const [status, setStatus] = useState('Planned');
+  const [date, setDate] = useState('');
   
   // État pour les listes déroulantes
   const [tournaments, setTournaments] = useState([]);
   const [teams, setTeams] = useState([]);
+  const [filteredTeams, setFilteredTeams] = useState([]);
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,17 +40,25 @@ const MatchForm = ({ match, onSave, onCancel }) => {
     fetchDropdownData();
   }, []);
 
+  // Filtrer les équipes en fonction du tournoi sélectionné
+  useEffect(() => {
+    if (tournamentId) {
+      const tournamentTeams = teams.filter(team => team.tournament === parseInt(tournamentId, 10));
+      setFilteredTeams(tournamentTeams);
+    } else {
+      setFilteredTeams([]);
+    }
+  }, [tournamentId, teams]);
+
   // Pré-remplir le formulaire en mode édition
   useEffect(() => {
     if (match) {
-      setTournamentId(match.tournamentId || '');
-      setTeam1Id(match.team1Id || '');
-      setTeam2Id(match.team2Id || '');
-      setScore1(match.score1 ?? ''); // Utiliser ?? pour gérer null/undefined
-      setScore2(match.score2 ?? '');
-      // Formater la date pour l'input type="datetime-local"
-      setMatchDate(match.matchDate ? new Date(match.matchDate).toISOString().slice(0, 16) : '');
-      setStatus(match.status || 'Planned');
+      setTournamentId(match.tournamentId?.toString() || '');
+      setTeam1Id(match.team1Id?.toString() || '');
+      setTeam2Id(match.team2Id?.toString() || '');
+      setScore1(match.score1 || '');
+      setScore2(match.score2 || '');
+      setDate(match.date || '');
     } else {
       // Réinitialiser pour création
       setTournamentId('');
@@ -58,8 +66,7 @@ const MatchForm = ({ match, onSave, onCancel }) => {
       setTeam2Id('');
       setScore1('');
       setScore2('');
-      setMatchDate('');
-      setStatus('Planned');
+      setDate('');
     }
   }, [match]);
 
@@ -73,13 +80,12 @@ const MatchForm = ({ match, onSave, onCancel }) => {
     setLoading(true);
 
     const matchData = {
-      tournamentId: parseInt(tournamentId) || null,
-      team1Id: parseInt(team1Id) || null,
-      team2Id: parseInt(team2Id) || null,
-      score1: score1 === '' ? null : parseInt(score1),
-      score2: score2 === '' ? null : parseInt(score2),
-      matchDate: matchDate ? new Date(matchDate).toISOString() : null,
-      status,
+      tournamentId: parseInt(tournamentId, 10),
+      team1Id: parseInt(team1Id, 10),
+      team2Id: parseInt(team2Id, 10),
+      score1: score1,
+      score2: score2,
+      date: date
     };
 
     try {
@@ -110,113 +116,101 @@ const MatchForm = ({ match, onSave, onCancel }) => {
       <div>
         <label htmlFor="match-tournament" className="block text-sm font-medium text-gray-300 mb-1">Tournoi *</label>
         <select 
-            id="match-tournament"
-            value={tournamentId}
-            onChange={(e) => setTournamentId(e.target.value)}
-            required
-            className="w-full"
+          id="match-tournament"
+          value={tournamentId}
+          onChange={(e) => {
+            setTournamentId(e.target.value);
+            setTeam1Id('');
+            setTeam2Id('');
+          }}
+          required
+          className="w-full"
         >
-            <option value="" disabled>Sélectionner un tournoi</option>
-            {tournaments.map(t => (
-                <option key={t.id} value={t.id}>{t.name} ({t.game})</option>
-            ))}
+          <option value="">Sélectionner un tournoi</option>
+          {tournaments.map(t => (
+            <option key={t.id} value={t.id}>{t.name}</option>
+          ))}
         </select>
       </div>
       
       {/* Sélection Équipes */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="match-team1" className="block text-sm font-medium text-gray-300 mb-1">Équipe 1 *</label>
-            <select 
-                id="match-team1"
-                value={team1Id}
-                onChange={(e) => setTeam1Id(e.target.value)}
-                required
-                className="w-full"
-            >
-                <option value="" disabled>Sélectionner l'équipe 1</option>
-                 {teams.map(t => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
-            </select>
-          </div>
-           <div>
-            <label htmlFor="match-team2" className="block text-sm font-medium text-gray-300 mb-1">Équipe 2 *</label>
-            <select 
-                id="match-team2"
-                value={team2Id}
-                onChange={(e) => setTeam2Id(e.target.value)}
-                required
-                className="w-full"
-            >
-                <option value="" disabled>Sélectionner l'équipe 2</option>
-                 {teams.map(t => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
-            </select>
-          </div>
+        <div>
+          <label htmlFor="match-team1" className="block text-sm font-medium text-gray-300 mb-1">Équipe 1 *</label>
+          <select 
+            id="match-team1"
+            value={team1Id}
+            onChange={(e) => setTeam1Id(e.target.value)}
+            required
+            disabled={!tournamentId}
+            className="w-full"
+          >
+            <option value="">Sélectionner l'équipe 1</option>
+            {filteredTeams.map(t => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="match-team2" className="block text-sm font-medium text-gray-300 mb-1">Équipe 2 *</label>
+          <select 
+            id="match-team2"
+            value={team2Id}
+            onChange={(e) => setTeam2Id(e.target.value)}
+            required
+            disabled={!tournamentId}
+            className="w-full"
+          >
+            <option value="">Sélectionner l'équipe 2</option>
+            {filteredTeams.map(t => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
-       {/* Scores */}
+      {/* Scores */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-           <div>
-            <label htmlFor="match-score1" className="block text-sm font-medium text-gray-300 mb-1">Score Équipe 1</label>
-            <input
-              id="match-score1"
-              type="number"
-              min="0"
-              value={score1}
-              onChange={(e) => setScore1(e.target.value)}
-              placeholder="-"
-              className="w-full"
-            />
-          </div>
-           <div>
-            <label htmlFor="match-score2" className="block text-sm font-medium text-gray-300 mb-1">Score Équipe 2</label>
-            <input
-              id="match-score2"
-              type="number"
-              min="0"
-              value={score2}
-              onChange={(e) => setScore2(e.target.value)}
-              placeholder="-"
-              className="w-full"
-            />
-          </div>
+        <div>
+          <label htmlFor="match-score1" className="block text-sm font-medium text-gray-300 mb-1">Score Équipe 1</label>
+          <input
+            id="match-score1"
+            type="text"
+            value={score1}
+            onChange={(e) => setScore1(e.target.value)}
+            placeholder="-"
+            className="w-full"
+          />
+        </div>
+        <div>
+          <label htmlFor="match-score2" className="block text-sm font-medium text-gray-300 mb-1">Score Équipe 2</label>
+          <input
+            id="match-score2"
+            type="text"
+            value={score2}
+            onChange={(e) => setScore2(e.target.value)}
+            placeholder="-"
+            className="w-full"
+          />
+        </div>
       </div>
 
-      {/* Date et Statut */}
-       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-           <div>
-            <label htmlFor="match-date" className="block text-sm font-medium text-gray-300 mb-1">Date et Heure</label>
-            <input
-              id="match-date"
-              type="datetime-local"
-              value={matchDate}
-              onChange={(e) => setMatchDate(e.target.value)}
-              className="w-full"
-            />
-          </div>
-            <div>
-                <label htmlFor="match-status" className="block text-sm font-medium text-gray-300 mb-1">Statut</label>
-                <select 
-                    id="match-status"
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="w-full"
-                >
-                    <option value="Planned">Planifié</option>
-                    <option value="Ongoing">En cours</option>
-                    <option value="Completed">Terminé</option>
-                     <option value="Postponed">Reporté</option>
-                    <option value="Cancelled">Annulé</option>
-                </select>
-            </div>
+      {/* Date */}
+      <div>
+        <label htmlFor="match-date" className="block text-sm font-medium text-gray-300 mb-1">Date du match</label>
+        <input
+          id="match-date"
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          required
+          className="w-full"
+        />
       </div>
 
       {error && (
         <div className="text-red-500 text-sm text-center p-3 bg-red-900 border border-red-700 rounded">
-            {error}
+          {error}
         </div>
       )}
 
