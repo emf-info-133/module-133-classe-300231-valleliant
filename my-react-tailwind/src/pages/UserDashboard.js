@@ -7,7 +7,7 @@ import TournamentForm from '../components/tournaments/TournamentForm';
 import MatchForm from '../components/matches/MatchForm';
 
 const UserDashboard = () => {
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const [showJoinTeamModal, setShowJoinTeamModal] = useState(false);
   const [showTournamentModal, setShowTournamentModal] = useState(false);
   const [showMatchModal, setShowMatchModal] = useState(false);
@@ -144,21 +144,21 @@ const UserDashboard = () => {
          
         {/* Carte pour créer un tournoi */}
         <div 
-          onClick={() => isAdmin ? setShowTournamentModal(true) : setError("Seuls les administrateurs peuvent créer des tournois.")}
+          onClick={() => setShowTournamentModal(true)}
           className="bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-700 cursor-pointer transition duration-150"
         >
           <h2 className="text-xl font-semibold text-indigo-400 mb-3">Tournois</h2>
-          <p className="text-gray-400 mb-4">Créer un nouveau tournoi (admin seulement).</p>
+          <p className="text-gray-400 mb-4">Créer un nouveau tournoi.</p>
           <span className="font-medium text-indigo-400 hover:text-indigo-300">Créer un tournoi &rarr;</span>
         </div>
         
         {/* Carte pour créer un match */}
         <div 
-          onClick={() => isAdmin ? setShowMatchModal(true) : setError("Seuls les administrateurs peuvent créer des matchs.")}
+          onClick={() => setShowMatchModal(true)}
           className="bg-gray-800 p-6 rounded-lg shadow-lg hover:bg-gray-700 cursor-pointer transition duration-150"
         >
           <h2 className="text-xl font-semibold text-indigo-400 mb-3">Matchs</h2>
-          <p className="text-gray-400 mb-4">Créer un nouveau match (admin seulement).</p>
+          <p className="text-gray-400 mb-4">Créer un nouveau match.</p>
           <span className="font-medium text-indigo-400 hover:text-indigo-300">Créer un match &rarr;</span>
         </div>
       </div>
