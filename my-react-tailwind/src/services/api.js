@@ -43,7 +43,6 @@ export const createTeam = (teamData) => {
   // Formatage selon TeamDTO.java
   const formattedData = {
     name: teamData.name,
-    captain: Number(teamData.captain),
     tournament: Number(teamData.tournament)
   };
   console.log('Création équipe:', formattedData);
@@ -69,7 +68,7 @@ export const joinTeam = (teamUserData) => {
     teamId: Number(teamUserData.teamId)
   };
   console.log('Rejoindre équipe:', formattedData);
-  return apiClient.post('/api/team-users/join', formattedData);
+  return apiClient.post('/api/teams/join', formattedData);
 };
 
 export const leaveTeam = (teamUserData) => {
@@ -78,7 +77,7 @@ export const leaveTeam = (teamUserData) => {
     userId: Number(teamUserData.userId),
     teamId: Number(teamUserData.teamId)
   };
-  return apiClient.delete('/api/team-users/leave', { data: formattedData });
+  return apiClient.delete('/api/teams/leave', { data: formattedData });
 };
 
 

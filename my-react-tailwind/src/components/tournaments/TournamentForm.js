@@ -69,13 +69,8 @@ const TournamentForm = ({ tournament, onSave, onCancel }) => {
 
     try {
       // Conversion explicite des IDs en nombres
-      const adminId = parseInt(user.id, 10);
+      const adminId = parseInt(1);
       const gameIdNum = parseInt(gameId, 10);
-      
-      // Vérification des valeurs numériques
-      if (isNaN(adminId) || adminId > 2147483647) {
-        throw new Error('ID administrateur invalide');
-      }
 
       if (isNaN(gameIdNum) || gameIdNum > 2147483647) {
         throw new Error('ID jeu invalide');

@@ -47,20 +47,13 @@ const UserDashboard = () => {
 
     try {
       // Conversion explicite en entiers
-      const userId = parseInt(user.id, 10);
       const teamId = parseInt(selectedTeamId, 10);
-
-      // Vérification des valeurs numériques
-      if (isNaN(userId) || userId > 2147483647) {
-        throw new Error('ID utilisateur invalide');
-      }
 
       if (isNaN(teamId) || teamId > 2147483647) {
         throw new Error('ID équipe invalide');
       }
 
       const teamUserData = {
-        userId: userId,
         teamId: teamId
       };
       
